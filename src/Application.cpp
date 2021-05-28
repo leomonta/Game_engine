@@ -48,6 +48,9 @@ float	  deltaTime		= 0.0f; // time elapsed since last frame
 float	  lastFrameTime = 0.0f; // last absolute frametime
 glm::vec2 mouse(-1.0f, -1.0f);
 
+// experimentation
+glm::vec4 worldColor(1.0f, 1.0f, 1.0f, 1.0f);
+
 // move camera left / right and foreward / backward
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
@@ -87,6 +90,19 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 			proj = camera.getPerspective(screen_width, screen_height);
 		}
 
+		// world color
+		float change = 0.05f;
+
+		if (mods == GLFW_MOD_SHIFT) {
+			change *= -1;
+		}
+		if (key == GLFW_KEY_I) {
+			worldColor.r += change;
+		} else if (key == GLFW_KEY_O) {
+			worldColor.g += change;
+		} else if (key == GLFW_KEY_P) {
+			worldColor.b += change;
+		}
 		// close windows
 		if (key == GLFW_KEY_ESCAPE) {
 			_Close = true;
@@ -132,8 +148,8 @@ int main() {
 
 // Create a windowed or fullscreen mode window and its OpenGL context
 #ifdef FULLSCREEN
-	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-	window				 = glfwCreateWindow(1920, 1080, "WOOOO HOOOO", monitor, NULL);
+	monitor = glfwGetPrimaryMonitor();
+	window	= glfwCreateWindow(1920, 1080, "WOOOO HOOOO", monitor, NULL);
 #else
 	window = glfwCreateWindow(int(screen_width), int(screen_height), "WOOOO HOOOO", NULL, NULL);
 #endif
@@ -273,6 +289,7 @@ int main() {
 
 				MVP = proj * view * model;
 				shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
+				shade.SetUniform4f("u_worldLight", worldColor.r, worldColor.g, worldColor.b, worldColor.a);
 			}
 
 			renderer.Draw(va, ib, shade);

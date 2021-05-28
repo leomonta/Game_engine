@@ -42,7 +42,7 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string &source)
 		glGetShaderInfoLog(id, length, &length, message);
 
 		// print the compilation error
-		std::cout << "failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader"
+		std::cout << "[Shader]: Error: failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader"
 				  << "\n";
 		std::cout << message << "\n";
 		glDeleteShader(id);
@@ -101,7 +101,7 @@ int Shader::GetUniformLocation(const std::string &name) {
 	// if not cached ask openGL
 	GLCall(int loc = glGetUniformLocation(m_RendererID, name.c_str()));
 	if (loc == -1) {
-		std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << std::endl;
+		std::cout << "[Shader]: Warning: Uniform '" << name << "' doesn't exist!" << std::endl;
 	}
 
 	// add to cache

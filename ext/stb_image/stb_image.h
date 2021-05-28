@@ -1206,7 +1206,7 @@ static stbi__uint16 *stbi__load_and_postprocess_16bit(stbi__context *s, int *x, 
 
 	if (stbi__vertically_flip_on_load) {
 		int channels = req_comp ? req_comp : *comp;
-		stbi__vertical_flip(result, *x, *y, channels * sizeof(stbi__uint16));
+		stbi__vertical_flip(result, *x, *y, channels * int(sizeof(stbi__uint16)));
 	}
 
 	return (stbi__uint16 *)result;
@@ -1217,7 +1217,7 @@ static void stbi__float_postprocess(float *result, int *x, int *y, int *comp, in
 {
 	if (stbi__vertically_flip_on_load && result != NULL) {
 		int channels = req_comp ? req_comp : *comp;
-		stbi__vertical_flip(result, *x, *y, channels * sizeof(float));
+		stbi__vertical_flip(result, *x, *y, channels * int(sizeof(float)));
 	}
 }
 #endif
@@ -6938,7 +6938,7 @@ static void stbi__hdr_convert(float *output, stbi_uc *input, int req_comp)
 		// Exponent
 		f1 = (float)ldexp(1.0f, input[3] - (int)(128 + 8));
 		if (req_comp <= 2)
-			output[0] = (input[0] + input[1] + input[2]) * f1 / 3;
+			output[0] = float(input[0] + input[1] + input[2]) * f1 / 3;
 		else {
 			output[0] = input[0] * f1;
 			output[1] = input[1] * f1;
@@ -7066,7 +7066,7 @@ static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int re
 					if (count > 128) {
 						// Run
 						value = stbi__get8(s);
-						count -= 128;
+						count -= (unsigned char)(128);
 						if (count > nleft) { STBI_FREE(hdr_data); STBI_FREE(scanline); return stbi__errpf("corrupt", "bad RLE data in HDR"); }
 						for (z = 0; z < count; ++z)
 							scanline[i++ * 4 + k] = value;
