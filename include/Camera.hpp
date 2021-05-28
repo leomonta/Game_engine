@@ -19,9 +19,9 @@ public:
 	Camera(glm::vec3 position);
 
 	glm::mat4 move(glm::vec3 offset);
-	glm::mat4 point(int posx, int posy);
+	glm::mat4 point(float posx, float posy);
 	void	  zoom(float diff_FOV);
 	glm::vec3 getFrontSpeed();
 	glm::vec3 getRightSpeed();
-	glm::mat4 getPerspective(int width, int height);
+	glm::mat4 getPerspective(float width, float height);
 };

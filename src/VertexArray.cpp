@@ -25,7 +25,7 @@ void VertexArray::AddBuffer(const VertexBuffer &vb, const VertexLayout &layout) 
 	const auto &attributes = layout.GetElements();
 
 	// offset from the start of the vertex
-	unsigned int offset = 0;
+	unsigned int* offset = 0;
 
 	for (unsigned int attributeIndex = 0; attributeIndex < attributes.size(); attributeIndex++) {
 
@@ -46,6 +46,6 @@ void VertexArray::AddBuffer(const VertexBuffer &vb, const VertexLayout &layout) 
 		GLCall(glVertexAttribPointer(attributeIndex, element.count, element.type, element.normalized, layout.GetStride(), (const void *)(offset)));
 
 		// update the offset
-		offset += element.count * VertexAttribute::GetSizeOfType(element.type);
+		*offset += element.count * VertexAttribute::GetSizeOfType(element.type);
 	}
 }

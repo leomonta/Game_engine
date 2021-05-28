@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 #include "Debugging.hpp"
-#include "stb_image.h"
+#include "stb_image/stb_image.h"
 
 // load a texture to the GPU
 Texture::Texture(const std::string &path)

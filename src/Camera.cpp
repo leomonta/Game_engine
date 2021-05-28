@@ -20,12 +20,12 @@ glm::mat4 Camera::move(glm::vec3 offset) {
 }
 
 // return the perspective projection matrix
-glm::mat4 Camera::getPerspective(int width, int height) {
-	return glm::perspective(glm::radians(m_FOV), float(width / height), 0.1f, 100.0f);
+glm::mat4 Camera::getPerspective(float width, float height) {
+	return glm::perspective(glm::radians(m_FOV), width / height, 0.1f, 100.0f);
 }
 
 // get the view matrix from mouse coordinate
-glm::mat4 Camera::point(int posx, int posy) {
+glm::mat4 Camera::point(float posx, float posy) {
 
 	float sensitivity = 0.1f;
 
@@ -34,9 +34,9 @@ glm::mat4 Camera::point(int posx, int posy) {
 
 	m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
 
-	m_cameraWatching.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-	m_cameraWatching.y = sin(glm::radians(m_pitch));
-	m_cameraWatching.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+	m_cameraWatching.x = float(cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)));
+	m_cameraWatching.y = float(sin(glm::radians(m_pitch)));
+	m_cameraWatching.z = float(sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)));
 	m_cameraWatching, m_cameraFront = glm::normalize(m_cameraWatching);
 
 	m_cameraFront.y = 0.0f;

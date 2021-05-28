@@ -2,8 +2,8 @@
 * Docs: https://docs.gl
 */
 
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include "glew/include/GL/glew.h"
+#include "glfw/include/GLFW/glfw3.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -100,8 +100,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 	PROFILE_FUNCTION();
 
 	glViewport(0, 0, width, height);
-	screen_height = height;
-	screen_width  = width;
+	screen_height = float(height);
+	screen_width  = float(width);
 	proj		  = camera.getPerspective(screen_width, screen_height);
 }
 
@@ -111,11 +111,11 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 	PROFILE_FUNCTION();
 
 	if (mouse == glm::vec2(-1.0f, -1.0f)) {
-		mouse.x = xpos;
-		mouse.y = ypos;
+		mouse.x = float(xpos);
+		mouse.y = float(ypos);
 	}
 
-	view = camera.point(xpos - mouse.x, mouse.y - ypos);
+	view = camera.point(float(xpos) - mouse.x, mouse.y - float(ypos));
 
 	mouse = glm::vec2(xpos, ypos);
 }
@@ -135,7 +135,7 @@ int main() {
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 	window				 = glfwCreateWindow(1920, 1080, "WOOOO HOOOO", monitor, NULL);
 #else
-	window = glfwCreateWindow(screen_width, screen_height, "WOOOO HOOOO", NULL, NULL);
+	window = glfwCreateWindow(int(screen_width), int(screen_height), "WOOOO HOOOO", NULL, NULL);
 #endif
 
 	// if window creation failed stop everything
@@ -322,7 +322,7 @@ void rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg) {
 void updateDTime() {
 
 	// framerate dependent way of measuring time
-	float currentFrame = glfwGetTime();
+	float currentFrame = float(glfwGetTime());
 	deltaTime		   = currentFrame - lastFrameTime;
 	lastFrameTime	   = currentFrame;
 }
