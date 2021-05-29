@@ -25,14 +25,22 @@
 
 //#define FULLSCREEN
 
-float screen_width	= 1000;
-float screen_height = 1000;
-bool  _Close		= false;
-
 void printMat4(glm::mat4 mat);
 void rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
 void translateMat4(glm::mat4 &matrix, glm::vec3 amout);
 void updateDTime();
+// inpu handling
+void processKeyboard();
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
+// globals
+float screen_width	= 1000;
+float screen_height = 1000;
+bool  _Close		= false;
+int	  keys[GLFW_KEY_LAST];
+char  keyMod = 0x00000000b; // 0 / 0 / num lock / caps lock / super / alt / control / shift /
 
 // MVP rojections
 glm::mat4 proj(1.0f);
@@ -52,59 +60,60 @@ glm::vec2 mouse(-1.0f, -1.0f);
 glm::vec4 ambientLight(0.1f, 0.2f, 0.2f, 1.0f);
 
 // move camera left / right and foreward / backward
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-
+void processKeyboard() {
 	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
-	// not using it now
-	// model = glm::mat4(1.0f);
+	// camera controls
+	// Foreward and Backward
+	if (keys[GLFW_KEY_W]) {
+		translation += camera.getFrontSpeed() * deltaTime;
+	} else if (keys[GLFW_KEY_S]) {
+		translation += camera.getFrontSpeed() * -deltaTime;
+	}
 
-	if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+	// Left and Right
+	if (keys[GLFW_KEY_A]) {
+		translation += camera.getRightSpeed() * -deltaTime;
+	} else if (keys[GLFW_KEY_D]) {
+		translation += camera.getRightSpeed() * deltaTime;
+	}
 
-		// camera controls
-		// Foreward and Backward
-		if (key == GLFW_KEY_W) {
-			translation += camera.getFrontSpeed() * deltaTime;
-		} else if (key == GLFW_KEY_S) {
-			translation += camera.getFrontSpeed() * -deltaTime;
-		}
+	// and apply the movement
+	view = camera.move(translation);
 
-		// Left and Right
-		if (key == GLFW_KEY_A) {
-			translation += camera.getRightSpeed() * -deltaTime;
-		} else if (key == GLFW_KEY_D) {
-			translation += camera.getRightSpeed() * deltaTime;
-		}
+	// Zoom
+	if (keys[GLFW_KEY_C]) {
+		camera.zoom(-1);
+		proj = camera.getPerspective(screen_width, screen_height);
+	} else if (keys[GLFW_KEY_X]) {
+		camera.zoom(1);
+		proj = camera.getPerspective(screen_width, screen_height);
+	}
 
-		// and apply the movement
-		view = camera.move(translation);
+	// world color
+	float change = 0.05f;
 
-		// Zoom
-		if (key == GLFW_KEY_C) {
-			camera.zoom(-1);
-			proj = camera.getPerspective(screen_width, screen_height);
-		} else if (key == GLFW_KEY_X) {
-			camera.zoom(1);
-			proj = camera.getPerspective(screen_width, screen_height);
-		}
+	if (keyMod & GLFW_MOD_SHIFT) { // Mask other bits and check only what i'm interested int
+		change *= -1;
+	}
+	if (keys[GLFW_KEY_I]) {
+		ambientLight.r += change;
+	}
+	if (keys[GLFW_KEY_O]) {
+		ambientLight.g += change;
+	}
+	if (keys[GLFW_KEY_P]) {
+		ambientLight.b += change;
+	}
+	// close windows
+	if (keys[GLFW_KEY_ESCAPE]) {
+		_Close = true;
+		return;
+	}
 
-		// world color
-		float change = 0.05f;
-
-		if (mods == GLFW_MOD_SHIFT) {
-			change *= -1;
-		}
-		if (key == GLFW_KEY_I) {
-			ambientLight.r += change;
-		} else if (key == GLFW_KEY_O) {
-			ambientLight.g += change;
-		} else if (key == GLFW_KEY_P) {
-			ambientLight.b += change;
-		}
-		// close windows
-		if (key == GLFW_KEY_ESCAPE) {
-			_Close = true;
-			return;
+	for (int i = 0; i < GLFW_KEY_LAST; i++) {
+		if (keys[i] > 0) {
+			std::cout << glfwGetKeyName(i, 0);
 		}
 	}
 }
@@ -116,6 +125,13 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 	screen_height = float(height);
 	screen_width  = float(width);
 	proj		  = camera.getPerspective(screen_width, screen_height);
+}
+
+// permits multiple key pressed at once
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+
+	keys[key] = action > 0; // _RELEASE = 0, _PRESS and _REPEAT = 1
+	keyMod	  = char(mods);
 }
 
 // make the camera look to the mouse
@@ -267,6 +283,7 @@ int main() {
 		// Loop until the user closes the window
 		while (!glfwWindowShouldClose(window) && !_Close) {
 
+			processKeyboard();
 			// update delta time for camera movement
 			updateDTime();
 
