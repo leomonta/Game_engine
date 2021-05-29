@@ -49,12 +49,10 @@ float	  lastFrameTime = 0.0f; // last absolute frametime
 glm::vec2 mouse(-1.0f, -1.0f);
 
 // lightning
-glm::vec4 ambientLight(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec4 ambientLight(0.1f, 0.2f, 0.2f, 1.0f);
 
 // move camera left / right and foreward / backward
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-
-	PROFILE_FUNCTION();
 
 	glm::vec3 translation(0.0f, 0.0f, 0.0f);
 
@@ -113,7 +111,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 // recalculate the perspective matrix from the new screen size and update the drawing viewport
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-	PROFILE_FUNCTION();
 
 	glViewport(0, 0, width, height);
 	screen_height = float(height);
@@ -123,8 +120,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
 // make the camera look to the mouse
 void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-
-	PROFILE_FUNCTION();
 
 	if (mouse == glm::vec2(-1.0f, -1.0f)) {
 		mouse.x = float(xpos);
@@ -137,8 +132,6 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 int main() {
-
-	Instrumentor::Get().BeginSession("openGL");
 
 	GLFWwindow *window;
 
@@ -190,8 +183,6 @@ int main() {
 
 	// scope every gl buffer, this way they will automatically destroyed
 	{
-
-		PROFILING_SCOPE("buffers and co");
 
 		// a cube
 		float pos[] = {
@@ -276,33 +267,24 @@ int main() {
 		// Loop until the user closes the window
 		while (!glfwWindowShouldClose(window) && !_Close) {
 
-			PROFILING_SCOPE("draw loop");
-
 			// update delta time for camera movement
 			updateDTime();
 
 			// Render here
 			renderer.Clear();
 
-			{
-				PROFILING_SCOPE("MVP and uniform");
-
-				MVP = proj * view * model;
-				shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
-				shade.SetUniform4f("u_ambientLight", ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a);
-			}
+			MVP = proj * view * model;
+			shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
+			shade.SetUniform4f("u_ambientLight", ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a);
 
 			renderer.Draw(va, ib, shade);
 
-			{
-				PROFILING_SCOPE("swap buffers");
-				// Swap front and back buffers
-				// show front buffer, work on back buffer
-				glfwSwapBuffers(window);
+			// Swap front and back buffers
+			// show front buffer, work on back buffer
+			glfwSwapBuffers(window);
 
-				// Poll for and process events
-				glfwPollEvents();
-			}
+			// Poll for and process events
+			glfwPollEvents();
 		}
 
 		Renderer::UnBindVertexArray();
@@ -310,7 +292,6 @@ int main() {
 		Renderer::UnBindIndexBuffer();
 		Renderer::UnBindShaderProgram();
 	}
-	Instrumentor::Get().EndSession();
 	glfwTerminate();
 	return 0;
 }

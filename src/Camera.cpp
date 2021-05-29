@@ -37,10 +37,14 @@ glm::mat4 Camera::point(float posx, float posy) {
 	m_cameraWatching.x = float(cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)));
 	m_cameraWatching.y = float(sin(glm::radians(m_pitch)));
 	m_cameraWatching.z = float(sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)));
-	m_cameraWatching, m_cameraFront = glm::normalize(m_cameraWatching);
+	m_cameraWatching   = glm::normalize(m_cameraWatching);
 
+	m_cameraFront.x = float(cos(glm::radians(m_yaw)));
 	m_cameraFront.y = 0.0f;
-	m_cameraRight	= glm::cross(m_cameraFront, m_cameraUp);
+	m_cameraFront.z = float(sin(glm::radians(m_yaw)));
+	m_cameraFront	= glm::normalize(m_cameraFront);
+
+	m_cameraRight = glm::cross(m_cameraFront, m_cameraUp);
 
 	return glm::lookAt(m_cameraPosition, m_cameraPosition + m_cameraWatching, glm::vec3(0.0f, 1.0f, 0.0f));
 }
