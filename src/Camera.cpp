@@ -15,7 +15,7 @@ glm::mat4 Camera::move(glm::vec3 offset) {
 
 	m_cameraPosition += offset;
 
-	//												the Up is the y axys
+	// the Up is the y axys
 	return glm::lookAt(m_cameraPosition, m_cameraPosition + m_cameraWatching, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 

@@ -3,7 +3,6 @@
 
 class Camera {
 private:
-	glm::vec3 m_cameraPosition; // absolute position of the camera
 	glm::vec3 m_cameraRight;	// the right direction
 	glm::vec3 m_cameraUp;		// the up direction of the camera
 	glm::vec3 m_cameraFront;	// also the direction foreward
@@ -16,6 +15,7 @@ private:
 	const float m_cameraSpeedConst = 2.0f;	 // camera movement base speed
 
 public:
+	glm::vec3 m_cameraPosition; // absolute position of the camera
 	Camera(glm::vec3 position);
 
 	glm::mat4 move(glm::vec3 offset);

@@ -58,8 +58,8 @@ float	  lastFrameTime = 0.0f; // last absolute frametime
 glm::vec2 mouse(-1.0f, -1.0f);
 
 // lightning
-glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
-glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
+glm::vec3 ambientLight(0.2f, 0.5f, 0.8f);
+glm::vec3 ligthPos(1.0f, 0.0f, 0.0f);
 
 // move camera left / right and foreward / backward
 void processKeyboard() {
@@ -206,19 +206,19 @@ int main() {
 		// a cube
 		float pos[] = {
 			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // 0 left down
-			0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,  // 1 right down
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,   // 2 right up
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f,  // 3 left up
+			0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,	// 1 right down
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,	// 2 right up
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f,	// 3 left up
 
 			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 0 left down
 			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // 1 right down
 			0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,	  // 2 right up
 			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // 3 left up
 
-			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   // 0 left down
-			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f,  // 1 right down
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f,	// 0 left down
+			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f,	// 1 right down
 			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, // 2 right up
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // 3 left up
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,	// 3 left up
 
 			0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,	  // 0 left down
 			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,  // 1 right down
@@ -226,9 +226,9 @@ int main() {
 			0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // 3 left up
 
 			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, // 0 left down
-			0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,  // 1 right down
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f,   // 2 right up
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,  // 3 left up
+			0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,	// 1 right down
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f,	// 2 right up
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,	// 3 left up
 
 			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 0 left down
 			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 1 right down
@@ -268,8 +268,6 @@ int main() {
 
 		Renderer::BindShaderProgram(shade);
 		shade.SetUniform1i("u_Texture", 0); // use the texture;
-		shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
-		shade.SetUniform3f("u_lightColor", 1.0f, 1.0f, 2.0f);
 
 		Texture texture("res/textures/this_is_snake.jpg");
 
@@ -292,13 +290,18 @@ int main() {
 			// update delta time for camera movement
 			updateDTime();
 
+			ligthPos.x = sin(glfwGetTime()) * 1.2f;
+			ligthPos.z = cos(glfwGetTime()) * 1.2f;
+
 			// Render here
 			renderer.Clear();
 
 			MVP = proj * view * model;
 			shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
 			shade.SetUniformMat4f("u_Model", model);
-			shade.SetUniform3f("u_ambientLight", ambientLight.r, ambientLight.g, ambientLight.b);
+			shade.SetUniform3f("u_LightColor", ambientLight.r, ambientLight.g, ambientLight.b);
+			shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
+			shade.SetUniform3f("u_CameraPos", camera.m_cameraPosition.x, camera.m_cameraPosition.y, camera.m_cameraPosition.z);
 
 			renderer.Draw(va, ib, shade);
 
