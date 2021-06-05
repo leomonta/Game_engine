@@ -57,6 +57,10 @@ glm::vec3 Camera::getRightSpeed() {
 	return m_cameraRight * m_cameraSpeedConst;
 }
 
+glm::vec3 Camera::getUpSpeed() {
+	return m_cameraUp * m_cameraSpeedConst;
+}
+
 // update FOV
 void Camera::zoom(float diff_FOV) {
 	m_FOV = glm::clamp(m_FOV + diff_FOV, 10.0f, 110.0f);

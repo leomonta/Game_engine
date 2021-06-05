@@ -25,10 +25,11 @@
 
 //#define FULLSCREEN
 
-void printMat4(glm::mat4 mat);
-void rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
-void translateMat4(glm::mat4 &matrix, glm::vec3 amout);
-void updateDTime();
+void	  printMat4(glm::mat4 mat);
+void	  rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
+void	  translateMat4(glm::mat4 &matrix, glm::vec3 amout);
+glm::vec3 calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
+void	  updateDTime();
 // inpu handling
 void processKeyboard();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -57,7 +58,8 @@ float	  lastFrameTime = 0.0f; // last absolute frametime
 glm::vec2 mouse(-1.0f, -1.0f);
 
 // lightning
-glm::vec4 ambientLight(0.1f, 0.2f, 0.2f, 1.0f);
+glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
+glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
 
 // move camera left / right and foreward / backward
 void processKeyboard() {
@@ -76,6 +78,13 @@ void processKeyboard() {
 		translation += camera.getRightSpeed() * -deltaTime;
 	} else if (keys[GLFW_KEY_D]) {
 		translation += camera.getRightSpeed() * deltaTime;
+	}
+
+	// Up and Down
+	if (keys[GLFW_KEY_SPACE]) {
+		translation += camera.getUpSpeed() * deltaTime;
+	} else if (keys[GLFW_KEY_LEFT_SHIFT]) {
+		translation += camera.getUpSpeed() * -deltaTime;
 	}
 
 	// and apply the movement
@@ -109,12 +118,6 @@ void processKeyboard() {
 	if (keys[GLFW_KEY_ESCAPE]) {
 		_Close = true;
 		return;
-	}
-
-	for (int i = 0; i < GLFW_KEY_LAST; i++) {
-		if (keys[i] > 0) {
-			std::cout << glfwGetKeyName(i, 0);
-		}
 	}
 }
 
@@ -202,38 +205,37 @@ int main() {
 
 		// a cube
 		float pos[] = {
-			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 0 left down
-			0.5f, -0.5f, -0.5f, 1.0f, 0.0f,	 // 1 right down
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,	 // 2 right up
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,	 // 3 left up
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, // 0 left down
+			0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,  // 1 right down
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f,   // 2 right up
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f,  // 3 left up
 
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // 0 left down
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,	// 1 right down
-			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,	// 2 right up
-			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,	// 3 left up
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 0 left down
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // 1 right down
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,	  // 2 right up
+			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // 3 left up
 
-			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,	 // 0 left down
-			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,	 // 1 right down
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // 2 right up
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	 // 3 left up
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   // 0 left down
+			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f,  // 1 right down
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, // 2 right up
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // 3 left up
 
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,	// 0 left down
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,	// 1 right down
-			0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // 2 right up
-			0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	// 3 left up
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,	  // 0 left down
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,  // 1 right down
+			0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, // 2 right up
+			0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // 3 left up
 
-			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // 0 left down
-			0.5f, -0.5f, -0.5f, 1.0f, 1.0f,	 // 1 right down
-			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,	 // 2 right up
-			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	 // 3 left up
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, // 0 left down
+			0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,  // 1 right down
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f,   // 2 right up
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,  // 3 left up
 
-			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // 0 left down
-			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,	// 1 right down
-			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,	// 2 right up
-			-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,	// 3 left up
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 0 left down
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 1 right down
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,	  // 2 right up
+			-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // 3 left up
 		};
 
-		// take care of bind/unbinding and drawing
 		Renderer renderer;
 
 		VertexArray	 va;
@@ -243,6 +245,7 @@ int main() {
 		// 2 bytes for position, 2 for texture coordinates
 		layout.Push(3, GL_FLOAT);
 		layout.Push(2, GL_FLOAT);
+		layout.Push(3, GL_FLOAT);
 		va.AddBuffer(vb, layout);
 
 		// using the vertices to create a square
@@ -265,6 +268,8 @@ int main() {
 
 		Renderer::BindShaderProgram(shade);
 		shade.SetUniform1i("u_Texture", 0); // use the texture;
+		shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
+		shade.SetUniform3f("u_lightColor", 1.0f, 1.0f, 2.0f);
 
 		Texture texture("res/textures/this_is_snake.jpg");
 
@@ -292,7 +297,8 @@ int main() {
 
 			MVP = proj * view * model;
 			shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
-			shade.SetUniform4f("u_ambientLight", ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a);
+			shade.SetUniformMat4f("u_Model", model);
+			shade.SetUniform3f("u_ambientLight", ambientLight.r, ambientLight.g, ambientLight.b);
 
 			renderer.Draw(va, ib, shade);
 
@@ -332,6 +338,17 @@ void rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg) {
 	matrix = glm::rotate(matrix, glm::radians(amountDeg.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	matrix = glm::rotate(matrix, glm::radians(amountDeg.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	matrix = glm::rotate(matrix, glm::radians(amountDeg.z), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
+glm::vec3 calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {
+	glm::vec3 x = v2 - v1;
+	std::cout << x.x << " : " << x.y << " : " << x.z << std::endl;
+	glm::vec3 y = v3 - v1;
+	std::cout << y.x << " : " << y.y << " : " << y.z << std::endl;
+
+	glm::vec3 res = glm::cross(x, y);
+	std::cout << res.x << " : " << res.y << " : " << res.z << std::endl;
+	return res;
 }
 
 void updateDTime() {

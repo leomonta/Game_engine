@@ -23,5 +23,6 @@ public:
 	void	  zoom(float diff_FOV);
 	glm::vec3 getFrontSpeed();
 	glm::vec3 getRightSpeed();
+	glm::vec3 getUpSpeed();
 	glm::mat4 getPerspective(float width, float height);
 };
