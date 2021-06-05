@@ -62,7 +62,7 @@ for i in files:
 
 		if ismodified(i):  # controllo che non sia gia stato compilato / non modificato
 
-			command = f"g++ -g3 -std=c++2a -Iinclude -Iext -Iext -c -Wconversion -Wshadow -Wextra -o .\\objs\\{temp[0]}.o .\\src\\{temp[0]}.cpp"
+			command = f"g++ -g3 -std=c++2a -Iinclude -Iext -c -Wconversion -Wshadow -Wextra -o .\\objs\\{temp[0]}.o .\\src\\{temp[0]}.cpp"
 
 			print(command)  # stampo il comando per eventuale debug
 
@@ -79,7 +79,14 @@ for i in files:
 
 # ora lavoro con gli oggetti
 
-if errors == 0:
+if errors != 0:
+	print("skipped the linking process for presence of error in the compiling process")
+	exit(1)
+
+# if no compilation happened cause no file changed
+if out[1] == "/":
+	print("Linking skipped, no compilation happened")
+else:
 	files = os.listdir("objs")
 
 	command = f"g++ -g3 -o exe/Game.exe -Lext/glfw/lib -Lext/glew/lib"
@@ -101,10 +108,6 @@ if errors == 0:
 	else:
 		print(out[1])
 		exit(1)
-else:
-	print("skipped linking process for presence of error in the compiling process")
-	exit(1)
-
 
 with open("files_hash.txt", "w") as f:
 	for i in new_hashes.keys():
