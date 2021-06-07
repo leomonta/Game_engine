@@ -58,8 +58,8 @@ float	  lastFrameTime = 0.0f; // last absolute frametime
 glm::vec2 mouse(-1.0f, -1.0f);
 
 // lightning
-glm::vec3 ambientLight(0.2f, 0.5f, 0.8f);
-glm::vec3 ligthPos(1.0f, 0.0f, 0.0f);
+glm::vec3 ambientLight(0.2f, 0.8f, 0.9f);
+glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
 
 // move camera left / right and foreward / backward
 void processKeyboard() {
@@ -269,7 +269,7 @@ int main() {
 		Renderer::BindShaderProgram(shade);
 		shade.SetUniform1i("u_Texture", 0); // use the texture;
 
-		Texture texture("res/textures/this_is_snake.jpg");
+		Texture redlamp_on("res/textures/redstone_lamp_on.png");
 
 		Renderer::UnBindVertexArray();
 		Renderer::UnBindVertexBuffer();
@@ -277,7 +277,7 @@ int main() {
 		Renderer::UnBindShaderProgram();
 
 		// bind the used stuff
-		Renderer::BindTexture(texture, 0);
+		Renderer::BindTexture(redlamp_on, 0);
 		Renderer::BindVertexArray(va);
 		Renderer::BindIndexBuffer(ib);
 		Renderer::BindShaderProgram(shade);
@@ -289,9 +289,6 @@ int main() {
 			processKeyboard();
 			// update delta time for camera movement
 			updateDTime();
-
-			ligthPos.x = sin(glfwGetTime()) * 1.2f;
-			ligthPos.z = cos(glfwGetTime()) * 1.2f;
 
 			// Render here
 			renderer.Clear();
