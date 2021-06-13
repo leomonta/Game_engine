@@ -3,6 +3,8 @@
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in vec4 Tint;
+layout(location = 4) in float Text_ID;
 
 out vec2 v_TexCoord;
 out vec3 v_normal;

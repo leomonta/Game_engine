@@ -1,7 +1,21 @@
 #pragma once
+#include <cstring>
 
 #include "VertexBuffer.hpp"
 #include "VertexLayout.hpp"
+#include "glm/glm.hpp"
+
+struct Vertex {
+	static const int size = 3 + 2 + 3+ 4 + 1;
+
+	glm::vec3 Vert_position;
+	glm::vec2 Tex_coord;
+	glm::vec3 Normal;
+	glm::vec4 Tint;
+	float	  Tex_ID;
+
+	void data(float *vertex_buffer);
+};
 
 class VertexArray {
 public:
@@ -10,6 +24,5 @@ public:
 	VertexArray();
 	~VertexArray();
 
-	void AddBuffer(const VertexBuffer& vb, const VertexLayout& layout);
-
+	void AddBuffer(const VertexBuffer &vb);
 };

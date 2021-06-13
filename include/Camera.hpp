@@ -11,7 +11,7 @@ private:
 	// vars
 	float		m_yaw			   = -90.0f; // rotation along the y axys
 	float		m_pitch			   = 0.0f;	 // rotation aling the x axys
-	float		m_FOV			   = 45.0f;	 // Fiel of view 1 -> 90
+	float		m_FOV			   = 45.0f;	 // Field of view 1 -> 90
 	const float m_cameraSpeedConst = 2.0f;	 // camera movement base speed
 
 public:
