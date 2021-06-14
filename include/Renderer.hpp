@@ -1,13 +1,19 @@
 #pragma once
 
 #include "glew/include/GL/glew.h"
-#include "VertexArray.hpp"
 #include "IndexBuffer.hpp"
 #include "Texture.hpp"
 #include "Shader.hpp"
 
+#define MAX_VERTEX_COUNT
+
 class Renderer {
 public:
+
+	struct Batch {
+
+	};
+
 	void Clear() const;
 	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& sh);
 

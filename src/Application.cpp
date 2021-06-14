@@ -211,7 +211,7 @@ bool intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::ve
 	glm::vec3 N	  = glm::cross(E1, E2);
 	float	  det = -glm::dot(Raydir, N);
 
-	float invdet = 1.0 / det;
+	float invdet = 1.0f / det;
 
 	glm::vec3 AO  = Rayorg - A; // Vector from the "origin" of the triangle to the origin of the line
 	glm::vec3 DAO = glm::cross(AO, Raydir);

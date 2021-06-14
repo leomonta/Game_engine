@@ -2,7 +2,6 @@
 #include <cstring>
 
 #include "VertexBuffer.hpp"
-#include "VertexLayout.hpp"
 #include "glm/glm.hpp"
 
 struct Vertex {
