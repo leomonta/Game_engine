@@ -2,7 +2,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 class Camera {
-private:
+public:
 	glm::vec3 m_cameraRight;	// the right direction
 	glm::vec3 m_cameraUp;		// the up direction of the camera
 	glm::vec3 m_cameraFront;	// also the direction foreward
@@ -14,7 +14,6 @@ private:
 	float		m_FOV			   = 45.0f;	 // Field of view 1 -> 90
 	const float m_cameraSpeedConst = 2.0f;	 // camera movement base speed
 
-public:
 	glm::vec3 m_cameraPosition; // absolute position of the camera
 	Camera(glm::vec3 position);
 
