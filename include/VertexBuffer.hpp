@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Debugging.hpp"
+
 class VertexBuffer {
 public:
 	// the unique ID of the buffer

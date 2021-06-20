@@ -81,7 +81,7 @@ for i in files:
 
 if errors != 0:
 	print("skipped the linking process for presence of error in the compiling process")
-	exit(1)
+	sys.exit(1)
 
 # if no compilation happened cause no file changed
 if out[1] == "/":
@@ -89,7 +89,7 @@ if out[1] == "/":
 else:
 	files = os.listdir("objs")
 
-	command = f"g++ -g3 -o exe/Game.exe -Lext/glfw/lib -Lext/glew/lib"
+	command = f"g++ -g3 -o bin/Game.exe -Lext/glfw/lib -Lext/glew/lib"
 
 	for i in files:
 		if [i.split(".")[-1] == "o"]:
@@ -107,7 +107,7 @@ else:
 		print(f"Program linked successufully")
 	else:
 		print(out[1])
-		exit(1)
+		sys.exit(1)
 
 with open("files_hash.txt", "w") as f:
 	for i in new_hashes.keys():

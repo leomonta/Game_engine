@@ -24,7 +24,6 @@
 #include "profiler.hpp"
 
 //#define FULLSCREEN
-#define MAX_VERTEX_COUNT 2048
 
 // function declaration
 void	  printMat4(glm::mat4 mat);
