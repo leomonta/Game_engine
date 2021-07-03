@@ -1,16 +1,14 @@
 #pragma once
 #include <cstring>
 
-#include "VertexBuffer.hpp"
 #include "Debugging.hpp"
+#include "VertexBuffer.hpp"
 #include "glm/glm.hpp"
 
 class VertexArray {
 public:
-	unsigned int m_RendererID;
+	static unsigned int createBuffer();
+	static void			deleteBuffer(const unsigned int Buffer_ID);
 
-	VertexArray();
-	~VertexArray();
-
-	void AddBuffer(const VertexBuffer &vb);
+	static void AddBuffer(const unsigned int VArray, const unsigned int VBuffer);
 };

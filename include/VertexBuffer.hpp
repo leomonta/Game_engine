@@ -4,12 +4,8 @@
 
 class VertexBuffer {
 public:
-	// the unique ID of the buffer
-	unsigned int m_RendererID;
-	unsigned int m_size;
+	static unsigned int createBuffer(unsigned int size);
+	static void			deleteBuffer(unsigned int Buffer_ID);
 
-	VertexBuffer(int size);
-	~VertexBuffer();
-
-	void submitData(const void *data);
+	static void submitData(unsigned int Buffer_ID, unsigned int size, const void *data);
 };

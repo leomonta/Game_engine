@@ -3,13 +3,15 @@
 #include "glew/include/GL/glew.h"
 
 // create the index buffer and fill
-IndexBuffer::IndexBuffer(const unsigned int *data, int count)
-	: m_Count(count) {
-	GLCall(glGenBuffers(1, &m_RendererID));
-	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID));
+unsigned int IndexBuffer::createBuffer(const unsigned int *data, int count) {
+	unsigned int Buffer_ID;
+	GLCall(glGenBuffers(1, &Buffer_ID));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffer_ID));
 	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW));
+
+	return Buffer_ID;
 }
 
-IndexBuffer::~IndexBuffer() {
-	GLCall(glDeleteBuffers(1, &m_RendererID));
+void IndexBuffer::deleteBuffer(unsigned int Buffer_ID) {
+	GLCall(glDeleteBuffers(1, &Buffer_ID));
 }

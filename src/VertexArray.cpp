@@ -1,32 +1,28 @@
 #include "VertexArray.hpp"
 #include "Renderer.hpp"
 
-void Vertex::data(float *vertex_buffer) {
-
-	assert(vertex_buffer[size - 1]);
-
-	memcpy(vertex_buffer, this, size * sizeof(float));
-}
-
 // create a Vertex array on the GPU, but no data
-VertexArray::VertexArray() {
-	GLCall(glGenVertexArrays(1, &m_RendererID));
+unsigned int VertexArray::createBuffer() {
+	unsigned int Buffer_ID;
+	GLCall(glGenVertexArrays(1, &Buffer_ID));
+
+	return Buffer_ID;
 }
 
 // delete the Vertex Array from the GPU
-VertexArray::~VertexArray() {
-	GLCall(glDeleteVertexArrays(1, &m_RendererID));
+void VertexArray::deleteBuffer(const unsigned int Buffer_ID) {
+	GLCall(glDeleteVertexArrays(1, &Buffer_ID));
 }
 
 // add a buffer and appy the given layout
-void VertexArray::AddBuffer(const VertexBuffer &vb) {
+void VertexArray::AddBuffer(const unsigned int VArray, const unsigned int VBuffer) {
 	//	| attribute0(2)| attribute1(2)				      |
 	//	| pos.x, pos.y | texture coord.x, texture coord.y |
 	//	|			   | component 1 ,		 component 2  |
 	//  ------------------The Entire Vertex----------------
 
-	Renderer::BindVertexArray(*this);
-	Renderer::BindVertexBuffer(vb);
+	Renderer::BindVertexArray(VArray);
+	Renderer::BindVertexBuffer(VBuffer);
 
 	// offset from the start of the vertex
 	int Vert_size = sizeof(Vertex);
