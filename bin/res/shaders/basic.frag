@@ -32,5 +32,5 @@ void main() {
 	vec3 specular = 0.5 * specLight * u_LightColor;
 
 	vec4 texColor = texture(u_Texture, v_TexCoord);
-	color = texColor * vec4(ambient + diffuse + specular, 1.0);
+	color = vec4(1.0); //texColor * vec4(ambient + diffuse + specular, 1.0);
 };
