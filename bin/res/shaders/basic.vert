@@ -6,9 +6,9 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) in vec4 Tint;
 layout(location = 4) in float Text_ID;
 
-out vec2 v_TexCoord;
-out vec3 v_normal;
-out vec3 f_position;
+layout(location = 0) out vec2 v_TexCoord;
+layout(location = 1) out vec3 v_normal;
+layout(location = 2) out vec3 f_position;
 
 uniform mat4 u_MVP;
 uniform mat4 u_Model;

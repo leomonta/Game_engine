@@ -49,9 +49,9 @@ void VertexArray::AddBuffer(const unsigned int VArray, const unsigned int VBuffe
 	GLCall(glEnableVertexAttribArray(2));
 	GLCall(glVertexAttribPointer(2, 3, GL_FLOAT, 0, Vert_size, (const void *)offsetof(Vertex, Normal)));
 
-	// Tint or color
+	// Color
 	GLCall(glEnableVertexAttribArray(3));
-	GLCall(glVertexAttribPointer(3, 4, GL_FLOAT, 0, Vert_size, (const void *)offsetof(Vertex, Tint)));
+	GLCall(glVertexAttribPointer(3, 4, GL_FLOAT, 0, Vert_size, (const void *)offsetof(Vertex, Color)));
 
 	// Texture slot id
 	GLCall(glEnableVertexAttribArray(4));

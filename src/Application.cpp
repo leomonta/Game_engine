@@ -15,24 +15,20 @@
 
 #include "Camera.hpp"
 #include "Debugging.hpp"
-#include "IndexBuffer.hpp"
 #include "Renderer.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "VertexArray.hpp"
-#include "VertexBuffer.hpp"
 #include "profiler.hpp"
 
 //#define FULLSCREEN
 
 // function declaration
-void	  printMat4(glm::mat4 mat);
 void	  rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
 void	  translateMat4(glm::mat4 &matrix, glm::vec3 amout);
 glm::vec3 calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
 void	  updateDTime();
 bool	  intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect pont
-void	  checkMouseRay();
+// void	  checkMouseRay();
 
 // input handling
 void processKeyboard();
@@ -68,34 +64,32 @@ glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
 // vertexes buffer and index buffer
 
 // using the vertices to create trises
-unsigned int indexes[MAX_VERTEX_COUNT]	= {};
-Vertex		 vertexes[MAX_VERTEX_COUNT] = {};
-int			 cube_Index					= 0;
-Vertex		 cube[24]					= {
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
-	{{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 2 right up
-	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 0 left down
-	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},		// 2 right up
-	{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 0 left down
-	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 2 right up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 3 left up
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},		// 0 left down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 2 right up
-	{{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
-	{{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 2 right up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 0 left down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},		// 2 right up
-	{{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}		// 3 left up
+int	   cube_Index = 3;
+Vertex cube[24]	  = {
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
+	  {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 3 left up
+	  {{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 2 right up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 3 left up
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
+	  {{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}	  // 3 left up
 };
 
 // move camera left / right and foreward / backward
@@ -157,17 +151,10 @@ void processKeyboard() {
 		return;
 	}
 
+	// [DEBUG]: add a cube
 	if (keys[GLFW_KEY_K]) {
-		if (24 * cube_Index + 23 < MAX_VERTEX_COUNT) {
 
-			for (int i = 0; i < 24; i++) {
-				vertexes[i + (24 * cube_Index)] = cube[i];
-				cube[i].Vert_position.x += 1.0f;
-			}
-
-			cube_Index++;
-		}
-
+		cube_Index += 4;
 		keys[GLFW_KEY_K] = 0;
 	}
 }
@@ -224,6 +211,85 @@ bool intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::ve
 	return false;
 }
 
+void debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
+	if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+		return;
+
+	std::cout << "---------------" << std::endl;
+	std::cout << "Debug message (" << id << "): " << message << std::endl;
+
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:
+		std::cout << "Source: API";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		std::cout << "Source: Window System";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		std::cout << "Source: Shader Compiler";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		std::cout << "Source: Third Party";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		std::cout << "Source: Application";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		std::cout << "Source: Other";
+		break;
+	}
+	std::cout << std::endl;
+
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:
+		std::cout << "Type: Error";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		std::cout << "Type: Deprecated Behaviour";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		std::cout << "Type: Undefined Behaviour";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		std::cout << "Type: Portability";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		std::cout << "Type: Performance";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		std::cout << "Type: Marker";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		std::cout << "Type: Push Group";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		std::cout << "Type: Pop Group";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		std::cout << "Type: Other";
+		break;
+	}
+	std::cout << std::endl;
+
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_HIGH:
+		std::cout << "Severity: high";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		std::cout << "Severity: medium";
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		std::cout << "Severity: low";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		std::cout << "Severity: notification";
+		break;
+	}
+	std::cout << std::endl;
+	std::cout << std::endl;
+}
+
+/*
 void checkMouseRay() {
 
 	glm::vec3 pos;
@@ -240,49 +306,6 @@ void checkMouseRay() {
 		}
 	}
 }
-/*
-bool RayIntersectsTriangle(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 *inTriangle, glm::vec3 &outIntersectionPoint) {
-	const float EPSILON = 0.0000001;
-	glm::vec3	vertex0 = inTriangle[0];
-	glm::vec3	vertex1 = inTriangle[1];
-	glm::vec3	vertex2 = inTriangle[2];
-	glm::vec3	edge1, edge2, h, s, q;
-	float		Determinant, InverseDeterminant, u, v; // Determinant is also the Angle of the line relative to the tris
-
-	edge1 = vertex1 - vertex0; // Vector pointing from the "origin" vertex to another one
-	edge2 = vertex2 - vertex0; // Vector pointing from the "origin" vertex to another one
-
-	h			= glm::cross(rayDir, edge2);
-	Determinant = glm::dot(edge1, h);
-	if (Determinant > -EPSILON && Determinant < EPSILON) { // -0.0001 < Determinant < 0.001
-		return false; // This ray is parallel to this triangle.
-	}
-
-	InverseDeterminant = 1.0 / Determinant;
-
-	s = rayOrigin - vertex0; // Vector from the "origin" of the triangle to the origin of the line
-	u = InverseDeterminant * glm::dot(s, h);
-
-	if (u < 0.0 || u > 1.0) {
-		return false;
-	}
-
-	q = glm::cross(s, edge1);
-	v = InverseDeterminant * glm::dot(rayDir, q);
-
-	if (v < 0.0 || u + v > 1.0) {
-		return false;
-	}
-
-	// At this stage we can compute t to find out where the intersection point is on the line.
-	float t = f * glm::dot(edge2, q);
-	if (t > EPSILON) // ray intersection
-	{
-		outIntersectionPoint = rayOrigin + rayDir * t;
-		return true;
-	} else // This means that there is a line intersection but not a ray intersection.
-		return false;
-}
 */
 int main() {
 
@@ -291,6 +314,8 @@ int main() {
 	// Initialize the library
 	if (!glfwInit())
 		return -1;
+
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
 // Create a windowed or fullscreen mode window and its OpenGL context
 #ifdef FULLSCREEN
@@ -325,6 +350,11 @@ int main() {
 	if (glewInit() != GLEW_OK) {
 		std::cout << "Error calling Glewinit";
 	}
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(debugMessage, NULL);
+
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
@@ -337,34 +367,14 @@ int main() {
 	// scope every gl buffer, this way they will automatically destroyed
 	{
 
-		Renderer renderer;
-
-		VertexArray	 va;
-		VertexBuffer vb(sizeof(vertexes)); // 10 cubes
-
-		va.AddBuffer(vb);
-
-		int offset = 0;
-		for (int i = 0; i < 36 * 10; i += 6) {
-			indexes[i + 0] = 0 + offset;
-			indexes[i + 1] = 1 + offset;
-			indexes[i + 2] = 2 + offset;
-			indexes[i + 3] = 2 + offset;
-			indexes[i + 4] = 3 + offset;
-			indexes[i + 5] = 0 + offset;
-
-			offset += 4;
-		}
-		IndexBuffer ib(indexes, MAX_VERTEX_COUNT);
-
 		proj = camera.getPerspective(screen_width, screen_width);
 		view = camera.point(0, -1);
 
 		Shader shade;
-		shade.addShader("res/shaders/basic.frag", GL_FRAGMENT_SHADER);
 		shade.addShader("res/shaders/basic.vert", GL_VERTEX_SHADER);
+		shade.addShader("res/shaders/basic.frag", GL_FRAGMENT_SHADER);
 
-		Renderer::BindShaderProgram(shade);
+		Renderer::BindShaderProgram(shade.m_RendererID);
 		shade.SetUniform1i("u_Texture", 0); // use the texture;
 
 		Texture redlamp_on("res/textures/redstone_lamp_on.png");
@@ -374,23 +384,30 @@ int main() {
 		Renderer::UnBindIndexBuffer();
 		Renderer::UnBindShaderProgram();
 
+		/*
+		This MF creates VertexBuffer, VertexArray and IndexBuffer The only problem is that Shaders need to be linked BEFORE
+		i define Vertex attribute, also done in here, 4 days of not working
+		Damn
+		Gonna Commit
+		*/
+		Renderer renderer;
+
 		// bind the used stuff
-		Renderer::BindTexture(redlamp_on, 0);
-		Renderer::BindVertexArray(va);
-		Renderer::BindIndexBuffer(ib);
-		Renderer::BindShaderProgram(shade);
+		Renderer::BindTexture(redlamp_on.m_RendererID, 0);
+		Renderer::BindShaderProgram(shade.m_RendererID);
+		Renderer::BindIndexBuffer(renderer.Current_batch.IBuffer);
+		Renderer::BindVertexBuffer(renderer.Current_batch.VBuffer);
+		Renderer::BindVertexArray(renderer.Current_batch.VArray);
 
 		// Main game loop
 		// Loop until the user closes the window
 		while (!glfwWindowShouldClose(window) && !_Close) {
 
 			processKeyboard();
-			checkMouseRay();
+			// checkMouseRay();
 
 			// update delta time for camera movement
 			updateDTime();
-
-			vb.submitData(&vertexes);
 
 			// Render here
 			renderer.Clear();
@@ -402,7 +419,11 @@ int main() {
 			shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
 			shade.SetUniform3f("u_CameraPos", camera.m_cameraPosition.x, camera.m_cameraPosition.y, camera.m_cameraPosition.z);
 
-			renderer.Draw(va, ib, shade);
+			for (int i = 0; i < cube_Index; i += 4) {
+				renderer.DrawQuad(cube[i + 0], cube[i + 1], cube[i + 2], cube[i + 3]);
+			}
+
+			renderer.Commit();
 
 			// Swap front and back buffers
 			// show front buffer, work on back buffer
@@ -419,17 +440,6 @@ int main() {
 	}
 	glfwTerminate();
 	return 0;
-}
-
-// for debug, print the matrix on console
-void printMat4(glm::mat4 matrix) {
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			printf("% 4.8f ", matrix[i][j]);
-		}
-		std::cout << std::endl;
-	}
 }
 
 void translateMat4(glm::mat4 &matrix, glm::vec3 amount) {
