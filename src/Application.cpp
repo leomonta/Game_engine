@@ -27,8 +27,8 @@ void	  rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
 void	  translateMat4(glm::mat4 &matrix, glm::vec3 amout);
 glm::vec3 calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
 void	  updateDTime();
-bool	  intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect pont
-// void	  checkMouseRay();
+bool	  intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect point
+glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes);
 
 // input handling
 void processKeyboard();
@@ -66,31 +66,37 @@ glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
 // using the vertices to create trises
 int	   cube_Index = 3;
 Vertex cube[24]	  = {
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
-	  {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 3 left up
-	  {{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 2 right up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 3 left up
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}, // 0 left down
-	  {{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, 0.0f}	  // 3 left up
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	  {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 3 left up
+	  {{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 3 left up
+	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	  {{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
+	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
+	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
+	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
+	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
+	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}	  // 3 left up
 };
+
+int	   tris_Index = 0;
+Vertex tris[3]	  = {
+	   {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f},
+	   {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f},
+	   {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f}};
 
 // move camera left / right and foreward / backward
 void processKeyboard() {
@@ -145,6 +151,7 @@ void processKeyboard() {
 	if (keys[GLFW_KEY_P]) {
 		ambientLight.b += change;
 	}
+
 	// close windows
 	if (keys[GLFW_KEY_ESCAPE]) {
 		_Close = true;
@@ -289,8 +296,7 @@ void debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsize
 	std::cout << std::endl;
 }
 
-/*
-void checkMouseRay() {
+glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes) {
 
 	glm::vec3 pos;
 	glm::vec3 A, B, C;
@@ -301,12 +307,13 @@ void checkMouseRay() {
 		C = vertexes[indexes[i + 2]].Vert_position;
 		intersect_triangle(camera.m_cameraWatching, camera.m_cameraPosition, A, B, C, pos);
 		if (pos.x != 0.0f && pos.y != 0.0f && pos.z != 0.0f) {
-			std::cout << pos.x << " : " << pos.y << " : " << pos.z << std::endl;
-			pos = {0.0f, 0.0f, 0.0f};
+			return pos;
 		}
 	}
+
+	return {0.0f, 0.0f, 0.0f};
 }
-*/
+
 int main() {
 
 	GLFWwindow *window;
@@ -352,7 +359,7 @@ int main() {
 	}
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(debugMessage, NULL);
+	glDebugMessageCallback((GLDEBUGPROC)(debugMessage), NULL);
 
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
@@ -404,7 +411,6 @@ int main() {
 		while (!glfwWindowShouldClose(window) && !_Close) {
 
 			processKeyboard();
-			// checkMouseRay();
 
 			// update delta time for camera movement
 			updateDTime();
@@ -422,6 +428,20 @@ int main() {
 			for (int i = 0; i < cube_Index; i += 4) {
 				renderer.DrawQuad(cube[i + 0], cube[i + 1], cube[i + 2], cube[i + 3]);
 			}
+
+			if (keys[GLFW_KEY_ENTER]) {
+
+				glm::vec3 base = checkMouseRay(renderer.Current_batch.VertBuffer, renderer.Current_batch.IndxBuffer);
+
+				tris[tris_Index].Vert_position = base;
+				tris_Index++;
+				if (tris_Index == 3) {
+					tris_Index = 0;
+				}
+
+				keys[GLFW_KEY_ENTER] = 0;
+			}
+			renderer.DrawTris(tris[0], tris[1], tris[2]);
 
 			renderer.Commit();
 

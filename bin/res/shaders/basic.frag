@@ -5,6 +5,7 @@ layout(location = 0) out vec4 color;
 layout(location = 0) in vec2 v_TexCoord;
 layout(location = 1) in vec3 f_position;
 layout(location = 2) in vec3 v_normal;
+layout(location = 3) in vec4 v_color;
 
 uniform vec3 u_LightColor;
 
@@ -32,5 +33,7 @@ void main() {
 	vec3 specular = 0.5 * specLight * u_LightColor;
 
 	vec4 texColor = texture(u_Texture, v_TexCoord);
-	color = texColor * vec4(ambient + diffuse + specular, 1.0);
+
+	// combine vertex color, texture color, and lightning
+	color = v_color * texColor * vec4(ambient + diffuse + specular, 1.0);
 };

@@ -1,7 +1,6 @@
 #include "renderer.hpp"
 #include "Debugging.hpp"
 #include "profiler.hpp"
-#include <iostream>
 
 void Vertex::data(float *vertex_buffer) {
 
@@ -103,11 +102,6 @@ void Renderer::Commit() {
 	IndexBuffer::submitData(Current_batch.IBuffer, Current_batch.indexCount, Current_batch.IndxBuffer);
 
 	GLCall(glDrawElements(GL_TRIANGLES, Current_batch.indexCount, GL_UNSIGNED_INT, nullptr));
-
-	for (int i = 0; i < Current_batch.indexCount; i++) {
-		std::cout << Current_batch.IndxBuffer[i] << " : " << Current_batch.VertBuffer[i].Vert_position.x << std::endl;
-	}
-	std::cout << std::endl;
 
 	// reset the position I'm writing to
 	Current_batch.nextVert	 = Current_batch.VertBuffer;
