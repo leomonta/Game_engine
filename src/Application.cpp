@@ -23,18 +23,24 @@
 //#define FULLSCREEN
 
 // function declaration
-void	  rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
-void	  translateMat4(glm::mat4 &matrix, glm::vec3 amout);
-glm::vec3 calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
-void	  updateDTime();
-bool	  intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect point
-glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes);
+GLFWwindow *setuo();
+void		rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
+void		translateMat4(glm::mat4 &matrix, glm::vec3 amout);
+void		debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
+glm::vec3	calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
+void		updateDTime();
+bool		intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect point to any tris closest to the where the camera is watching
+glm::vec3	checkMouseRay(Vertex *vertexes, unsigned int *indexes, unsigned int count);
 
 // input handling
 void processKeyboard();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+
+// Drawing utils
+void addCube(Vertex *cube, Renderer &renderer);
+void shift(Vertex *verticies, glm::vec3 offset, int count);
 
 // globals
 float screen_width	= 1000;
@@ -50,7 +56,7 @@ glm::mat4 model(1.0f);
 glm::mat4 MVP(1.0f);
 
 // camera object
-Camera camera(glm::vec3(0.0f, 0.5f, 2.0f));
+Camera camera(glm::vec3(5.0f, 5.5f, 2.0f));
 
 // variable for calculating cameraposition and speed
 float	  deltaTime		= 0.0f; // time elapsed since last frame
@@ -63,40 +69,107 @@ glm::vec3 ligthPos(2.0f, 2.0f, 2.0f);
 
 // vertexes buffer and index buffer
 
+bool chunk[10][10]; // true: a block is present, false: a block is not present
+
+int cube_bases[10] = {0};
 // using the vertices to create trises
-int	   cube_Index = 3;
-Vertex cube[24]	  = {
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
-	  {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 3 left up
-	  {{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 3 left up
-	  {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
-	  {{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 1 right down
-	  {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},  // 3 left up
-	  {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 0 left down
-	  {{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 1 right down
-	  {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	  // 2 right up
-	  {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}	  // 3 left up
+Vertex cube[24] = {
+	{{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
+	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
+	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 2 right up
+	{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
+	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 0 left down
+	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
+	{{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
+	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
+	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 2 right up
+	{{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}		// 3 left up
 };
 
-int	   tris_Index = 0;
-Vertex tris[3]	  = {
-	   {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f},
-	   {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f},
-	   {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.5f, 1.0f}, 0.0f}};
+GLFWwindow *setup() {
+
+	GLFWwindow *window;
+
+	// Initialize the library
+	if (!glfwInit()) {
+		std::cout << "[Error]: GLFW initialization failed" << std::endl;
+		return nullptr;
+	}
+
+	std::cout << "[INFO]: GLFW successfully initialized" << std::endl;
+
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+// Create a windowed or fullscreen mode window and its OpenGL context
+#ifdef FULLSCREEN
+	monitor = glfwGetPrimaryMonitor();
+	window	= glfwCreateWindow(1920, 1080, "WOOOO HOOOO", monitor, NULL);
+#else
+	window = glfwCreateWindow(int(screen_width), int(screen_height), "WOOOO HOOOO", NULL, NULL);
+#endif
+
+	// if window creation failed stop everything
+	if (!window) {
+		std::cout << "[ERROR]: Window creation failed" << std::endl;
+		glfwTerminate();
+		return nullptr;
+	}
+
+	std::cout << "[INFO]: window created successfully" << std::endl;
+
+	// callback for window resize
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	// callback for key pressed
+	glfwSetKeyCallback(window, key_callback);
+	// callback for mouse positioon changed
+	glfwSetCursorPosCallback(window, mouse_callback);
+	// hide the mouse pointer and constrint it within the window
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Make the window's context current, draw on this window
+	glfwMakeContextCurrent(window);
+
+	// set the swap interval as the v-sync
+	glfwSwapInterval(1);
+
+	// initializiong Glew
+	if (glewInit() != GLEW_OK) {
+		std::cout << "[ERROR]: GLEW initialization failed" << std::endl;
+		return nullptr;
+	}
+
+	std::cout << "[INFO]: GLEW successfully initialized" << std::endl;
+
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback((GLDEBUGPROC)(debugMessage), NULL);
+
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+
+	std::cout << "[INFO]: OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+
+	// enabling aplha
+	GLCall(glEnable(GL_BLEND));
+	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	// enable depth buffer
+	GLCall(glEnable(GL_DEPTH_TEST));
+
+	return window;
+}
 
 // move camera left / right and foreward / backward
 void processKeyboard() {
@@ -159,11 +232,11 @@ void processKeyboard() {
 	}
 
 	// [DEBUG]: add a cube
-	if (keys[GLFW_KEY_K]) {
+	/*if (keys[GLFW_KEY_K]) {
 
 		cube_Index += 4;
 		keys[GLFW_KEY_K] = 0;
-	}
+	}*/
 }
 
 // recalculate the perspective matrix from the new screen size and update the drawing viewport
@@ -198,24 +271,35 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 // find the intersection point between a line and a tris
 bool intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res) {
 
-	glm::vec3 E1 = B - A; // Vector pointing from the "origin" vertex to another one
-	glm::vec3 E2 = C - A; // Vector pointing from the "origin" vertex to another one
+	const float EPSILON = 0.0000001f;
+	glm::vec3	edge1, edge2, h, AO, q;
+	float		det, invDet, u, v;
+	edge1 = B - A;
+	edge2 = C - A;
+	h	  = glm::cross(Raydir, edge2);
+	det	  = glm::dot(edge1, h);
+	if (det > -EPSILON && det < EPSILON)
+		return false; // This ray is parallel to this triangle.
 
-	glm::vec3 N	  = glm::cross(E1, E2);
-	float	  det = -glm::dot(Raydir, N);
+	invDet = 1.0f / det;
+	AO	   = Rayorg - A;
+	u	   = invDet * glm::dot(AO, h);
+	if (u < 0.0 || u > 1.0)
+		return false;
 
-	float invdet = 1.0f / det;
+	q = glm::cross(AO, edge1);
+	v = invDet * glm::dot(Raydir, q);
+	if (v < 0.0 || u + v > 1.0)
+		return false;
 
-	glm::vec3 AO  = Rayorg - A; // Vector from the "origin" of the triangle to the origin of the line
-	glm::vec3 DAO = glm::cross(AO, Raydir);
-	float	  u	  = glm::dot(E2, DAO) * invdet;
-	float	  v	  = -glm::dot(E1, DAO) * invdet;
-	float	  t	  = glm::dot(AO, N) * invdet;
-	if (det >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0 && (u + v) <= 1.0) {
-		res = Rayorg + (t * Raydir);
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	float t = invDet * glm::dot(edge2, q);
+	if (t > EPSILON) // ray intersection
+	{
+		res = Rayorg + (Raydir * t);
 		return true;
-	}
-	return false;
+	} else // This means that there is a line intersection but not a ray intersection.
+		return false;
 }
 
 void debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -296,83 +380,52 @@ void debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsize
 	std::cout << std::endl;
 }
 
-glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes) {
+glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes, unsigned int count) {
 
-	glm::vec3 pos;
+	glm::vec3 pos, min = {0.0f, 0.0f, 0.0f};
 	glm::vec3 A, B, C;
 
-	for (int i = 0; i < MAX_VERTEX_COUNT - 3; i += 3) {
+	for (unsigned int i = 0; i < count - 3; i += 3) {
 		A = vertexes[indexes[i + 0]].Vert_position;
 		B = vertexes[indexes[i + 1]].Vert_position;
 		C = vertexes[indexes[i + 2]].Vert_position;
 		intersect_triangle(camera.m_cameraWatching, camera.m_cameraPosition, A, B, C, pos);
-		if (pos.x != 0.0f && pos.y != 0.0f && pos.z != 0.0f) {
-			return pos;
+
+		if (glm::length(min) <= 0.000001) {
+			min = pos;
+		}
+
+		float a = glm::length(pos - camera.m_cameraPosition);
+		float b = glm::length(min - camera.m_cameraPosition);
+		if (a < b) {
+			min = pos;
 		}
 	}
 
-	return {0.0f, 0.0f, 0.0f};
+	return min;
+}
+
+void addCube(Vertex *verticies, Renderer &renderer) {
+
+	for (int i = 0; i < 24; i += 4) {
+		renderer.DrawQuad(verticies[i + 0], verticies[i + 1], verticies[i + 2], verticies[i + 3]);
+	}
+}
+
+void shift(Vertex *verticies, glm::vec3 offset, int count) {
+	for (int i = 0; i < count; i++) {
+		verticies[i].Vert_position += offset;
+	}
 }
 
 int main() {
 
-	GLFWwindow *window;
-
-	// Initialize the library
-	if (!glfwInit())
-		return -1;
-
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-
-// Create a windowed or fullscreen mode window and its OpenGL context
-#ifdef FULLSCREEN
-	monitor = glfwGetPrimaryMonitor();
-	window	= glfwCreateWindow(1920, 1080, "WOOOO HOOOO", monitor, NULL);
-#else
-	window = glfwCreateWindow(int(screen_width), int(screen_height), "WOOOO HOOOO", NULL, NULL);
-#endif
-
-	// if window creation failed stop everything
-	if (!window) {
-		glfwTerminate();
-		return -1;
-	}
-
-	// callback for window resize
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	// callback for key pressed
-	glfwSetKeyCallback(window, key_callback);
-	// callback for mouse positioon changed
-	glfwSetCursorPosCallback(window, mouse_callback);
-	// hide the mouse pointer and constrint it within the window
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	// Make the window's context current, draw on this window
-	glfwMakeContextCurrent(window);
-
-	// set the swap interval as the v-sync
-	glfwSwapInterval(1);
-
-	// initializiong Glew
-	if (glewInit() != GLEW_OK) {
-		std::cout << "Error calling Glewinit";
-	}
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback((GLDEBUGPROC)(debugMessage), NULL);
-
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-
-	std::cout << glGetString(GL_VERSION) << std::endl;
-
-	// enabling aplha
-	GLCall(glEnable(GL_BLEND));
-	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	// enable depth buffer
-	GLCall(glEnable(GL_DEPTH_TEST));
+	// creating OpenGL context and window
+	GLFWwindow *window = setup();
 
 	// scope every gl buffer, this way they will automatically destroyed
 	{
+		chunk[5][5] = true;
 
 		proj = camera.getPerspective(screen_width, screen_width);
 		view = camera.point(0, -1);
@@ -425,27 +478,45 @@ int main() {
 			shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
 			shade.SetUniform3f("u_CameraPos", camera.m_cameraPosition.x, camera.m_cameraPosition.y, camera.m_cameraPosition.z);
 
-			for (int i = 0; i < cube_Index; i += 4) {
-				renderer.DrawQuad(cube[i + 0], cube[i + 1], cube[i + 2], cube[i + 3]);
+			for (int i = 0; i < 10; i++) {
+				for (int j = 0; j < 10; j++) {
+					if (chunk[i][j]) {
+						shift(cube, {i, j, 0}, 24);
+						addCube(cube, renderer);
+						shift(cube, {-i, -j, 0}, 24);
+					}
+				}
 			}
 
 			if (keys[GLFW_KEY_ENTER]) {
 
-				glm::vec3 base = checkMouseRay(renderer.Current_batch.VertBuffer, renderer.Current_batch.IndxBuffer);
+				glm::vec3 base = checkMouseRay(renderer.Current_batch.VertBuffer, renderer.Current_batch.IndxBuffer, renderer.Current_batch.indexCount);
 
-				tris[tris_Index].Vert_position = base;
-				tris_Index++;
-				if (tris_Index == 3) {
-					tris_Index = 0;
+				std::cout << base.x << " : " << base.y << " : " << base.z << std::endl;
+
+				int I = int(roundf(base.x));
+				int J = int(roundf(base.y));
+
+				std::cout << I << " : " << J << std::endl;
+
+				if (chunk[I][J]) {
+
+					I = int(floorf(base.x));
+					J = int(floorf(base.y));
 				}
+
+				chunk[I][J] = true;
 
 				keys[GLFW_KEY_ENTER] = 0;
 			}
-			renderer.DrawTris(tris[0], tris[1], tris[2]);
+
+			// there is a breakpoint here, useful for quick debug stop
+			if (keys[GLFW_KEY_K]) {
+				keys[GLFW_KEY_K] = 0;
+			}
 
 			renderer.Commit();
 
-			// Swap front and back buffers
 			// show front buffer, work on back buffer
 			glfwSwapBuffers(window);
 
