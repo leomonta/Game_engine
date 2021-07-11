@@ -100,6 +100,15 @@ Vertex cube[24] = {
 	{{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}		// 3 left up
 };
 
+// the small crosshair quad
+Vertex croshair_verts[4]{
+
+	{{-0.03f, -0.03f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{0.03f, -0.03f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
+	{{0.03f, 0.03f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
+	{{-0.03f, 0.03f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+};
+
 GLFWwindow *setup() {
 
 	GLFWwindow *window;
@@ -430,12 +439,14 @@ int main() {
 		proj = camera.getPerspective(screen_width, screen_width);
 		view = camera.point(0, -1);
 
-		Shader shade;
-		shade.addShader("res/shaders/basic.vert", GL_VERTEX_SHADER);
-		shade.addShader("res/shaders/basic.frag", GL_FRAGMENT_SHADER);
+		//  --- GAME ---
 
-		Renderer::BindShaderProgram(shade.m_RendererID);
-		shade.SetUniform1i("u_Texture", 0); // use the texture;
+		Shader Game_shader;
+		Game_shader.addShader("res/shaders/main.vert", GL_VERTEX_SHADER);
+		Game_shader.addShader("res/shaders/main.frag", GL_FRAGMENT_SHADER);
+
+		Renderer::BindShaderProgram(Game_shader.m_RendererID);
+		Game_shader.SetUniform1i("u_Texture", 0); // use the texture;
 
 		Texture redlamp_on("res/textures/redstone_lamp_on.png");
 
@@ -444,17 +455,30 @@ int main() {
 		Renderer::UnBindIndexBuffer();
 		Renderer::UnBindShaderProgram();
 
-		/*
-		This MF creates VertexBuffer, VertexArray and IndexBuffer The only problem is that Shaders need to be linked BEFORE
-		i define Vertex attribute, also done in here, 4 days of not working
-		Damn
-		Gonna Commit
-		*/
-		Renderer renderer;
+		Renderer Game_renderer;
+
+		//  --- HUD ---
+
+		Shader HUD_shader;
+		HUD_shader.addShader("res/shaders/hud.vert", GL_VERTEX_SHADER);
+		HUD_shader.addShader("res/shaders/hud.frag", GL_FRAGMENT_SHADER);
+
+		Renderer::BindShaderProgram(HUD_shader.m_RendererID);
+		HUD_shader.SetUniform1i("u_Texture", 1);
+
+		Texture CrossHair("res/textures/CrossHair.png");
+
+		Renderer HUD_renderer;
+
+		// Unbind everything to be sure
+		Renderer::UnBindVertexArray();
+		Renderer::UnBindVertexBuffer();
+		Renderer::UnBindIndexBuffer();
+		Renderer::UnBindShaderProgram();
 
 		// bind the used stuff
 		Renderer::BindTexture(redlamp_on.m_RendererID, 0);
-		Renderer::BindShaderProgram(shade.m_RendererID);
+		Renderer::BindTexture(CrossHair.m_RendererID, 1);
 
 		// Main game loop
 		// Loop until the user closes the window
@@ -466,53 +490,63 @@ int main() {
 			updateDTime();
 
 			// Render here
-			renderer.Clear();
+			Game_renderer.Clear();
 
-			MVP = proj * view * model;
-			shade.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
-			shade.SetUniformMat4f("u_Model", model);
-			shade.SetUniform3f("u_LightColor", ambientLight.r, ambientLight.g, ambientLight.b);
-			shade.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
-			shade.SetUniform3f("u_CameraPos", camera.m_cameraPosition.x, camera.m_cameraPosition.y, camera.m_cameraPosition.z);
+			{ // GAME
+				Renderer::BindShaderProgram(Game_shader.m_RendererID);
 
-			for (int i = 0; i < 10; i++) {
-				for (int j = 0; j < 10; j++) {
-					if (chunk[i][j]) {
-						shift(cube, {i, j, 0}, 24);
-						addCube(cube, renderer);
-						shift(cube, {-i, -j, 0}, 24);
+				MVP = proj * view * model;
+				Game_shader.SetUniformMat4f("u_MVP", MVP); // use the projection matrix
+				Game_shader.SetUniformMat4f("u_Model", model);
+				Game_shader.SetUniform3f("u_LightColor", ambientLight.r, ambientLight.g, ambientLight.b);
+				Game_shader.SetUniform3f("u_LightPos", ligthPos.x, ligthPos.y, ligthPos.z);
+				Game_shader.SetUniform3f("u_CameraPos", camera.m_cameraPosition.x, camera.m_cameraPosition.y, camera.m_cameraPosition.z);
+
+				for (int i = 0; i < 10; i++) {
+					for (int j = 0; j < 10; j++) {
+						if (chunk[i][j]) {
+							shift(cube, {i, j, 0}, 24);
+							addCube(cube, Game_renderer);
+							shift(cube, {-i, -j, 0}, 24);
+						}
 					}
 				}
-			}
 
-			if (keys[GLFW_KEY_ENTER]) {
+				if (keys[GLFW_KEY_ENTER]) {
 
-				glm::vec3 base = checkMouseRay(renderer.Current_batch.VertBuffer, renderer.Current_batch.IndxBuffer, renderer.Current_batch.indexCount);
+					glm::vec3 base = checkMouseRay(Game_renderer.Current_batch.VertBuffer, Game_renderer.Current_batch.IndxBuffer, Game_renderer.Current_batch.indexCount);
 
-				std::cout << base.x << " : " << base.y << " : " << base.z << std::endl;
+					int I = int(roundf(base.x));
+					int J = int(roundf(base.y));
 
-				int I = int(roundf(base.x));
-				int J = int(roundf(base.y));
+					if (chunk[I][J]) {
 
-				std::cout << I << " : " << J << std::endl;
+						I = int(floorf(base.x));
+						J = int(floorf(base.y));
+					}
 
-				if (chunk[I][J]) {
+					chunk[I][J] = true;
 
-					I = int(floorf(base.x));
-					J = int(floorf(base.y));
+					keys[GLFW_KEY_ENTER] = 0;
 				}
 
-				chunk[I][J] = true;
+				// there is a breakpoint here, useful for quick debug stop
+				if (keys[GLFW_KEY_K]) {
+					keys[GLFW_KEY_K] = 0;
+				}
 
-				keys[GLFW_KEY_ENTER] = 0;
-			}
+				Game_renderer.Commit();
 
-			// there is a breakpoint here, useful for quick debug stop
-			if (keys[GLFW_KEY_K]) {
-				keys[GLFW_KEY_K] = 0;
-			}
+			} // END GAME
 
-			renderer.Commit();
+			{ // HUD
+				Renderer::BindShaderProgram(HUD_shader.m_RendererID);
+
+				HUD_renderer.DrawQuad(croshair_verts[0], croshair_verts[1], croshair_verts[2], croshair_verts[3]);
+
+				HUD_renderer.Commit();
+
+			} // END HUD
 
 			// show front buffer, work on back buffer
 			glfwSwapBuffers(window);
