@@ -25,7 +25,7 @@ struct Batch { // represent the stuff that must be drawn
 	Vertex *VertBuffer;
 	Vertex *nextVert = VertBuffer;
 
-	unsigned int VBuffer, VArray, IBuffer = 0;
+	unsigned int GLVertexBuffer, GLVertexArray, GLIndexBuffer = 0;
 
 	unsigned int* IndxBuffer;
 

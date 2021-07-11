@@ -16,24 +16,24 @@ Renderer::Renderer() {
 	Current_batch.nextVert	 = Current_batch.VertBuffer;
 
 	// create the necessary buffers
-	Current_batch.VArray  = VertexArray::createBuffer();
-	Current_batch.VBuffer = VertexBuffer::createBuffer(sizeof(Vertex) * MAX_VERTEX_COUNT);
-	Current_batch.IBuffer = IndexBuffer::createBuffer(MAX_VERTEX_COUNT);
+	Current_batch.GLVertexArray  = VertexArray::createBuffer();
+	Current_batch.GLVertexBuffer = VertexBuffer::createBuffer(sizeof(Vertex) * MAX_VERTEX_COUNT);
+	Current_batch.GLIndexBuffer = IndexBuffer::createBuffer(MAX_VERTEX_COUNT);
 
 	Current_batch.indexCount = 0;
 	Current_batch.indexVal	 = 0;
 
 	// apply the Vertex attributes to correct Array and buffer
-	VertexArray::AddBuffer(Current_batch.VArray, Current_batch.VBuffer);
+	VertexArray::AddBuffer(Current_batch.GLVertexArray, Current_batch.GLVertexBuffer);
 }
 
 Renderer::~Renderer() {
 	delete[] Current_batch.VertBuffer;
 	delete[] Current_batch.IndxBuffer;
 
-	glDeleteBuffers(1, &Current_batch.IBuffer);
-	glDeleteBuffers(1, &Current_batch.VBuffer);
-	glDeleteVertexArrays(1, &Current_batch.VArray);
+	glDeleteBuffers(1, &Current_batch.GLIndexBuffer);
+	glDeleteBuffers(1, &Current_batch.GLVertexBuffer);
+	glDeleteVertexArrays(1, &Current_batch.GLVertexArray);
 }
 
 void Renderer::Clear() const {
@@ -94,19 +94,23 @@ void Renderer::DrawQuad(Vertex &v1, Vertex &v2, Vertex &v3, Vertex &v4) {
 
 void Renderer::Commit() {
 
+	BindIndexBuffer(Current_batch.GLIndexBuffer);
+	BindVertexArray(Current_batch.GLVertexArray);
+	BindVertexBuffer(Current_batch.GLVertexBuffer);
+
 	// Get how many Vertex i need to send to the buffer
 	unsigned int size = (unsigned int)(Current_batch.nextVert - Current_batch.VertBuffer) * (unsigned int)(sizeof(Vertex));
 
 	// Upload vertex data to the GPU VertexBuffer
-	VertexBuffer::submitData(Current_batch.VBuffer, size, Current_batch.VertBuffer);
-	IndexBuffer::submitData(Current_batch.IBuffer, Current_batch.indexCount, Current_batch.IndxBuffer);
+	VertexBuffer::submitData(Current_batch.GLVertexBuffer, size, Current_batch.VertBuffer);
+	IndexBuffer::submitData(Current_batch.GLIndexBuffer, Current_batch.indexCount, Current_batch.IndxBuffer);
 
 	GLCall(glDrawElements(GL_TRIANGLES, Current_batch.indexCount, GL_UNSIGNED_INT, nullptr));
 
 	// reset the position I'm writing to
 	Current_batch.nextVert	 = Current_batch.VertBuffer;
 	Current_batch.indexCount = 0;
-	Current_batch.indexVal = 0;
+	Current_batch.indexVal	 = 0;
 }
 
 void Renderer::BindIndexBuffer(const unsigned int &IBuffer) {
