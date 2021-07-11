@@ -455,9 +455,6 @@ int main() {
 		// bind the used stuff
 		Renderer::BindTexture(redlamp_on.m_RendererID, 0);
 		Renderer::BindShaderProgram(shade.m_RendererID);
-		Renderer::BindIndexBuffer(renderer.Current_batch.GLIndexBuffer);
-		Renderer::BindVertexBuffer(renderer.Current_batch.GLVertexBuffer);
-		Renderer::BindVertexArray(renderer.Current_batch.GLVertexArray);
 
 		// Main game loop
 		// Loop until the user closes the window
