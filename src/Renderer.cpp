@@ -16,9 +16,9 @@ Renderer::Renderer() {
 	Current_batch.nextVert	 = Current_batch.VertBuffer;
 
 	// create the necessary buffers
-	Current_batch.GLVertexArray  = VertexArray::createBuffer();
+	Current_batch.GLVertexArray	 = VertexArray::createBuffer();
 	Current_batch.GLVertexBuffer = VertexBuffer::createBuffer(sizeof(Vertex) * MAX_VERTEX_COUNT);
-	Current_batch.GLIndexBuffer = IndexBuffer::createBuffer(MAX_VERTEX_COUNT);
+	Current_batch.GLIndexBuffer	 = IndexBuffer::createBuffer(MAX_VERTEX_COUNT);
 
 	Current_batch.indexCount = 0;
 	Current_batch.indexVal	 = 0;
@@ -52,6 +52,10 @@ void Renderer::DrawVertex(Vertex &V) {
 
 void Renderer::DrawTris(Vertex &v1, Vertex &v2, Vertex &v3) {
 
+	if (Current_batch.indexCount + 4 > MAX_VERTEX_COUNT) {
+		Commit();
+	}
+
 	(*Current_batch.nextVert) = v1;
 	Current_batch.nextVert++;
 
@@ -70,6 +74,9 @@ void Renderer::DrawTris(Vertex &v1, Vertex &v2, Vertex &v3) {
 
 void Renderer::DrawQuad(Vertex &v1, Vertex &v2, Vertex &v3, Vertex &v4) {
 
+	if (Current_batch.indexCount + 4 > MAX_VERTEX_COUNT) {
+		Commit();
+	}
 	(*Current_batch.nextVert) = v1;
 	Current_batch.nextVert++;
 

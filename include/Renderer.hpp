@@ -7,7 +7,7 @@
 #include "glew/include/GL/glew.h"
 #include "glm/glm.hpp"
 
-#define MAX_VERTEX_COUNT 1048576 // 1MBi
+#define MAX_VERTEX_COUNT 10240 // 10 * 2^10 = 10K
 
 struct Vertex {
 	static const int size = 3 + 2 + 3 + 4 + 1;
