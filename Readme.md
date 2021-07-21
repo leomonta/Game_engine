@@ -2,5 +2,5 @@
 
 ### I plan on doing a simil minecraft clone to test the features of the engines
 
-I started from @TheCherno tutorial on YT but added my own stuff helped by [Learn OpenGL] (https://learnopengl.com)
+I started from @TheCherno tutorial on YT but added my own stuff helped by [Learn OpenGL](https://learnopengl.com)
 
