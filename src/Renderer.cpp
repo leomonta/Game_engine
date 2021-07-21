@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 #include "Debugging.hpp"
+#include "Logger.hpp"
 #include "profiler.hpp"
 
 void Vertex::data(float *vertex_buffer) {
@@ -52,7 +53,8 @@ void Renderer::DrawVertex(Vertex &V) {
 
 void Renderer::DrawTris(Vertex &v1, Vertex &v2, Vertex &v3) {
 
-	if (Current_batch.indexCount + 4 > MAX_VERTEX_COUNT) {
+	if (Current_batch.indexCount + 3 > MAX_VERTEX_COUNT) {
+		Logger::Log(Logger::Warning, "Max vertex count exceeded, committing drawing call");
 		Commit();
 	}
 
@@ -75,8 +77,10 @@ void Renderer::DrawTris(Vertex &v1, Vertex &v2, Vertex &v3) {
 void Renderer::DrawQuad(Vertex &v1, Vertex &v2, Vertex &v3, Vertex &v4) {
 
 	if (Current_batch.indexCount + 4 > MAX_VERTEX_COUNT) {
+		Logger::Log(Logger::Warning, "Max vertex count exceeded, committing drawing call");
 		Commit();
 	}
+
 	(*Current_batch.nextVert) = v1;
 	Current_batch.nextVert++;
 

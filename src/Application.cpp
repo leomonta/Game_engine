@@ -15,6 +15,7 @@
 
 #include "Camera.hpp"
 #include "Debugging.hpp"
+#include "Logger.hpp"
 #include "Renderer.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
@@ -118,11 +119,11 @@ GLFWwindow *setup() {
 
 	// Initialize the library
 	if (!glfwInit()) {
-		std::cout << "[Error]: GLFW initialization failed" << std::endl;
+		LOG(Error, "GLFW initialization failed");
 		return nullptr;
 	}
 
-	std::cout << "[INFO]: GLFW successfully initialized" << std::endl;
+	LOG(Info, "GLFW successufully initialized");
 
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
@@ -136,12 +137,12 @@ GLFWwindow *setup() {
 
 	// if window creation failed stop everything
 	if (!window) {
-		std::cout << "[ERROR]: Window creation failed" << std::endl;
+		LOG(Error, "Window creation failed");
 		glfwTerminate();
 		return nullptr;
 	}
 
-	std::cout << "[INFO]: window created successfully" << std::endl;
+	LOG(Info, "window created successfully");
 
 	// callback for window resize
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -160,11 +161,11 @@ GLFWwindow *setup() {
 
 	// initializiong Glew
 	if (glewInit() != GLEW_OK) {
-		std::cout << "[ERROR]: GLEW initialization failed" << std::endl;
+		LOG(Error, "GLEW initialization failed");
 		return nullptr;
 	}
 
-	std::cout << "[INFO]: GLEW successfully initialized" << std::endl;
+	LOG(Info, "GLEW successfully initialized");
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -172,7 +173,9 @@ GLFWwindow *setup() {
 
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
-	std::cout << "[INFO]: OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+	std::string GL_ver = "OpenGL version: ";
+	GL_ver += (const char *)glGetString(GL_VERSION);
+	LOG(Info, &GL_ver);
 
 	// enabling aplha
 	GLCall(glEnable(GL_BLEND));
