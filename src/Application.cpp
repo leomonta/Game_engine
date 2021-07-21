@@ -23,14 +23,15 @@
 //#define FULLSCREEN
 
 // function declaration
-GLFWwindow *setuo();
+GLFWwindow *setup();
 void		rotateMat4(glm::mat4 &matrix, glm::vec3 amountDeg);
 void		translateMat4(glm::mat4 &matrix, glm::vec3 amout);
 void		debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 glm::vec3	calcNormal(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
 void		updateDTime();
-bool		intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect point to any tris closest to the where the camera is watching
-glm::vec3	checkMouseRay(Vertex *vertexes, unsigned int *indexes, unsigned int count);
+bool		intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res); // calculate the intersect point to any tris
+glm::vec3	checkMouseRay(Vertex *vertexes, unsigned int *indexes, unsigned int count);									   // return the intersection point to any geometry closest to the camera
+void		get_block_raycast(glm::vec3 rayorg, glm::vec3 raydir, glm::vec3 &res);										   // find the block watched by the camera
 
 // input handling
 void processKeyboard();
@@ -74,42 +75,44 @@ bool chunk[10][10]; // true: a block is present, false: a block is not present
 int cube_bases[10] = {0};
 // using the vertices to create trises
 Vertex cube[24] = {
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
-	{{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
-	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
-	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 2 right up
-	{{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
-	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 0 left down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
-	{{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
-	{{0.5f, -0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
-	{{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
-	{{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 0 left down
-	{{0.5f, 0.5f, -0.5f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},		// 2 right up
-	{{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}		// 3 left up
+	{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
+	{{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, +1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, +1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, +1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, +1.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
+	{{0.0f, 1.0f, 1.0f}, {1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
+	{{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {+1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {+1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
+	{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
+	{{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, +1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, +1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, +1.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}	 // 3 left up
 };
 
 // the small crosshair quad
-Vertex croshair_verts[4]{
+Vertex crosshair_verts[4]{
 
-	{{-0.03f, -0.03f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
-	{{0.03f, -0.03f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 1 right down
-	{{0.03f, 0.03f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 2 right up
-	{{-0.03f, 0.03f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f},	// 3 left up
+	{{-0.03f, -0.03f, -1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 0 left down
+	{{+0.03f, -0.03f, -1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 1 right down
+	{{+0.03f, +0.03f, -1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 2 right up
+	{{-0.03f, +0.03f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 1.0f}, 0.0f}, // 3 left up
 };
 
 GLFWwindow *setup() {
+
+	PROFILE_FUNCTION();
 
 	GLFWwindow *window;
 
@@ -280,35 +283,22 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 // find the intersection point between a line and a tris
 bool intersect_triangle(glm::vec3 Raydir, glm::vec3 Rayorg, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 &res) {
 
-	const float EPSILON = 0.0000001f;
-	glm::vec3	edge1, edge2, h, AO, q;
-	float		det, invDet, u, v;
-	edge1 = B - A;
-	edge2 = C - A;
-	h	  = glm::cross(Raydir, edge2);
-	det	  = glm::dot(edge1, h);
-	if (det > -EPSILON && det < EPSILON)
-		return false; // This ray is parallel to this triangle.
-
-	invDet = 1.0f / det;
-	AO	   = Rayorg - A;
-	u	   = invDet * glm::dot(AO, h);
-	if (u < 0.0 || u > 1.0)
-		return false;
-
-	q = glm::cross(AO, edge1);
-	v = invDet * glm::dot(Raydir, q);
-	if (v < 0.0 || u + v > 1.0)
-		return false;
-
-	// At this stage we can compute t to find out where the intersection point is on the line.
-	float t = invDet * glm::dot(edge2, q);
-	if (t > EPSILON) // ray intersection
-	{
+	float	  u, v, t;
+	glm::vec3 E1	 = B - A;
+	glm::vec3 E2	 = C - A;
+	glm::vec3 N		 = glm::cross(E1, E2);
+	float	  det	 = -glm::dot(Raydir, N);
+	float	  invdet = 1.0 / det;
+	glm::vec3 AO	 = Rayorg - A;
+	glm::vec3 DAO	 = glm::cross(AO, Raydir);
+	u				 = glm::dot(E2, DAO) * invdet;
+	v				 = -glm::dot(E1, DAO) * invdet;
+	t				 = glm::dot(AO, N) * invdet;
+	if (det >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0 && (u + v) <= 1.0) {
 		res = Rayorg + (Raydir * t);
 		return true;
-	} else // This means that there is a line intersection but not a ray intersection.
-		return false;
+	}
+	return false;
 }
 
 void debugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -394,24 +384,46 @@ glm::vec3 checkMouseRay(Vertex *vertexes, unsigned int *indexes, unsigned int co
 	glm::vec3 pos, min = {0.0f, 0.0f, 0.0f};
 	glm::vec3 A, B, C;
 
-	for (unsigned int i = 0; i < count - 3; i += 3) {
+	for (unsigned int i = 0; i < count; i += 3) {
 		A = vertexes[indexes[i + 0]].Vert_position;
 		B = vertexes[indexes[i + 1]].Vert_position;
 		C = vertexes[indexes[i + 2]].Vert_position;
-		intersect_triangle(camera.m_cameraWatching, camera.m_cameraPosition, A, B, C, pos);
 
-		if (glm::length(min) <= 0.000001) {
-			min = pos;
-		}
+		// ignores non intersection
+		if (intersect_triangle(camera.m_cameraWatching, camera.m_cameraPosition, A, B, C, pos)) {
+			if (glm::length(min) <= 0.000001) {
+				min = pos;
+			}
 
-		float a = glm::length(pos - camera.m_cameraPosition);
-		float b = glm::length(min - camera.m_cameraPosition);
-		if (a < b) {
-			min = pos;
+			float a = glm::length(pos - camera.m_cameraPosition);
+			float b = glm::length(min - camera.m_cameraPosition);
+			if (a < b) {
+				min = pos;
+			}
 		}
 	}
-
 	return min;
+}
+
+void get_block_raycast(glm::vec3 rayorg, glm::vec3 raydir, glm::vec3 &res) {
+
+	int X, Y, Z;
+	while (true) {
+
+		rayorg += raydir * 0.25f;
+
+		X = int(rayorg.x);
+		Y = int(rayorg.y);
+		Z = int(rayorg.z);
+
+		if (chunk[X][Y]) {
+			res.x = X;
+			res.y = Y;
+			res.z = Z;
+
+			return;
+		}
+	}
 }
 
 void addCube(Vertex *verticies, Renderer &renderer) {
@@ -429,11 +441,17 @@ void shift(Vertex *verticies, glm::vec3 offset, int count) {
 
 int main() {
 
+	//Instrumentor::Get().BeginSession("game");
+
+	//PROFILE_FUNCTION();
+
 	// creating OpenGL context and window
 	GLFWwindow *window = setup();
 
 	// scope every gl buffer, this way they will automatically destroyed
 	{
+		//PROFILING_SCOPE("renderer and shaders");
+
 		chunk[5][5] = true;
 
 		proj = camera.getPerspective(screen_width, screen_width);
@@ -484,6 +502,8 @@ int main() {
 		// Loop until the user closes the window
 		while (!glfwWindowShouldClose(window) && !_Close) {
 
+			//PROFILING_SCOPE("active loop");
+
 			processKeyboard();
 
 			// update delta time for camera movement
@@ -493,6 +513,9 @@ int main() {
 			Game_renderer.Clear();
 
 			{ // GAME
+
+				//PROFILING_SCOPE("Game render");
+
 				Renderer::BindShaderProgram(Game_shader.m_RendererID);
 
 				MVP = proj * view * model;
@@ -512,27 +535,31 @@ int main() {
 					}
 				}
 
+				/*
+				Ok it's been 1-2 weeks since i've started trying to PLACE A MF BLOCK based on the ones already present.
+				But the function that gives me the collision doesn't work all the times, it's copied from stack Overflow and i can't understand it, but it should work
+				maybe the problem is the data i use or glm, but i can't figure out what and where is the actual problem.
+				*/
 				if (keys[GLFW_KEY_ENTER]) {
 
-					glm::vec3 base = checkMouseRay(Game_renderer.Current_batch.VertBuffer, Game_renderer.Current_batch.IndxBuffer, Game_renderer.Current_batch.indexCount);
+					// get the intersetion point
+					glm::vec3 intersection = checkMouseRay(Game_renderer.Current_batch.VertBuffer, Game_renderer.Current_batch.IndxBuffer, Game_renderer.Current_batch.indexCount);
 
-					int I = int(roundf(base.x));
-					int J = int(roundf(base.y));
+					// move it towards the camera by 0.1
+					// tecnically I'm moving by 10% of the camera direction vector, but since it is always normalized it ends up 0.1 anyway
 
-					if (chunk[I][J]) {
+					intersection += 0.2f * -camera.m_cameraWatching;
 
-						I = int(floorf(base.x));
-						J = int(floorf(base.y));
-					}
+					// get the block coords
+					int X, Y, Z;
 
-					chunk[I][J] = true;
+					X = int(intersection.x);
+					Y = int(intersection.y);
+					Z = int(intersection.z);
+
+					chunk[X][Y] = 1;
 
 					keys[GLFW_KEY_ENTER] = 0;
-				}
-
-				// there is a breakpoint here, useful for quick debug stop
-				if (keys[GLFW_KEY_K]) {
-					keys[GLFW_KEY_K] = 0;
 				}
 
 				Game_renderer.Commit();
@@ -540,9 +567,12 @@ int main() {
 			} // END GAME
 
 			{ // HUD
+
+				//PROFILING_SCOPE("HUD rendering");
+
 				Renderer::BindShaderProgram(HUD_shader.m_RendererID);
 
-				HUD_renderer.DrawQuad(croshair_verts[0], croshair_verts[1], croshair_verts[2], croshair_verts[3]);
+				HUD_renderer.DrawQuad(crosshair_verts[0], crosshair_verts[1], crosshair_verts[2], crosshair_verts[3]);
 
 				HUD_renderer.Commit();
 
@@ -560,6 +590,9 @@ int main() {
 		Renderer::UnBindIndexBuffer();
 		Renderer::UnBindShaderProgram();
 	}
+
+	//Instrumentor::Get().EndSession();
+
 	glfwTerminate();
 	return 0;
 }
