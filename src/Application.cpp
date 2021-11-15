@@ -150,8 +150,8 @@ GLFWwindow *setup() {
 	glfwSetKeyCallback(window, key_callback);
 	// callback for mouse positioon changed
 	glfwSetCursorPosCallback(window, mouse_callback);
-	// hide the mouse pointer and constrint it within the window
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// hide the mouse pointer and constraint it within the window
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Make the window's context current, draw on this window
 	glfwMakeContextCurrent(window);
@@ -240,11 +240,12 @@ void processKeyboard() {
 		ambientLight.b += change;
 	}
 
-	// close windows
+	/*/ close windows
 	if (keys[GLFW_KEY_ESCAPE]) {
 		_Close = true;
 		return;
 	}
+	*/
 
 	// [DEBUG]: add a cube
 	/*if (keys[GLFW_KEY_K]) {
@@ -503,7 +504,7 @@ int main() {
 
 		// Main game loop
 		// Loop until the user closes the window
-		while (!glfwWindowShouldClose(window) && !_Close) {
+		while (!_Close) {
 
 			//PROFILING_SCOPE("active loop");
 
