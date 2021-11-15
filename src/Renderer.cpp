@@ -1,4 +1,4 @@
-#include "renderer.hpp"
+#include "Renderer.hpp"
 #include "Debugging.hpp"
 #include "Logger.hpp"
 #include "profiler.hpp"

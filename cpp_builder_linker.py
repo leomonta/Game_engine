@@ -1,7 +1,10 @@
+#! /usr/bin/python3
+
 import subprocess
 import os
 import sys
 import hashlib
+from colorama import Fore, init
 
 sha1 = hashlib.sha1()
 old_hashes = {}
@@ -18,6 +21,7 @@ def ismodified(filename):
 			return False
 	return True
 
+init()
 
 # create file if it does not exist
 if not os.path.exists("files_hash.txt"):
@@ -25,24 +29,25 @@ if not os.path.exists("files_hash.txt"):
 	f.close()
 
 
-# read hashes from files and add them to old_hashes array
-with open("files_hash.txt", "r") as f:
-	while True:
-		data = f.readline()
-		if not data:
-			break
-		temp = data.split(":")
+if "-a" not in sys.argv:
+	# read hashes from files and add them to old_hashes array
+	with open("files_hash.txt", "r") as f:
+		while True:
+			data = f.readline()
+			if not data:
+				break
+			temp = data.split(":")
 
-		# remove trailing newline
-		temp[1] = temp[1].replace("\n", "")
-		old_hashes[temp[0]] = temp[1]
+			# remove trailing newline
+			temp[1] = temp[1].replace("\n", "")
+			old_hashes[temp[0]] = temp[1]
 
 # mi posiziono sulla cartella in cui ci sono i file da compilare e controllare
 files = os.listdir("src")
 
 # obtain new hashes
 for i in files:
-	with open("src\\" + i, "r+b") as f:
+	with open("src/" + i, "r+b") as f:
 		sha1.update(f.read())
 
 	# insert in the new_hashes dict the key filename eith the value hash
@@ -62,7 +67,7 @@ for i in files:
 
 		if ismodified(i):  # controllo che non sia gia stato compilato / non modificato
 
-			command = f"g++ -g3 -std=c++2a -Iinclude -Iext -c -Wconversion -Wshadow -Wextra -o .\\objs\\{temp[0]}.o .\\src\\{temp[0]}.cpp"
+			command = f"g++ -g3 -std=c++2a -Iinclude -Iext -c -Wno-missing-field-initializers -Wconversion -Wshadow -Wextra -o ./objs/{temp[0]}.o ./src/{temp[0]}.cpp"
 
 			print(command)  # stampo il comando per eventuale debug
 
@@ -73,9 +78,14 @@ for i in files:
 			if len(out[1]) == 0:
 				print(f"{i} compiled successfully")
 			else:
-				print(out[1])
-				if (out[1].find("error:") != -1):
+				if "error:" in out[1]:
 					errors +=1
+					print(Fore.RED, out[1], Fore.WHITE)
+				elif "warning:" in out[1]:
+					print(Fore.YELLOW, out[1], Fore.WHITE)
+				else:
+					print(out[1])
+
 
 # ora lavoro con gli oggetti
 
@@ -89,12 +99,12 @@ if out[1] == "/":
 else:
 	files = os.listdir("objs")
 
-	command = f"g++ -g3 -o bin/Game.exe -Lext/glfw/lib -Lext/glew/lib"
+	command = f"g++ -o bin/Game.exe -Lext/glew/lib -Lext/glfw/lib"
 
 	for i in files:
 		if [i.split(".")[-1] == "o"]:
 			command += f" objs/{i}"
-	command += " -lglfw3 -lopengl32 -lgdi32 -lwinmm -lglew32"
+	command += " -lGLEW -lglfw3 -lpthread -ldl -lGL -lX11"
 
 	print("\n--Linking--")
 	print(command)
@@ -107,7 +117,6 @@ else:
 		print(f"Program linked successufully")
 	else:
 		print(out[1])
-		sys.exit(1)
 
 with open("files_hash.txt", "w") as f:
 	for i in new_hashes.keys():

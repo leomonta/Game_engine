@@ -1,6 +1,8 @@
 #pragma once
 
-#define ASSERT(x) if (!(x)) __debugbreak();
+#include <signal.h>
+
+#define ASSERT(x) if (!(x)) raise(SIGTRAP);
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
