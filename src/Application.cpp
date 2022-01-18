@@ -549,6 +549,20 @@ int main() {
 					// get the intersetion point
 					glm::vec3 intersection = checkMouseRay(Game_renderer.Current_batch.VertBuffer, Game_renderer.Current_batch.IndxBuffer, Game_renderer.Current_batch.indexCount);
 
+					shift(cube, intersection, 24);
+
+					for (int i = 0; i < 24; i++) {
+						cube[i].Vert_position *= 0.1;
+					}
+
+					addCube(cube, Game_renderer);
+
+					for (int i = 0; i < 24; i++) {
+						cube[i].Vert_position *= 10;
+					}
+
+					shift(cube, -intersection, 24);
+
 					// move it towards the camera by 0.1
 					// tecnically I'm moving by 10% of the camera direction vector, but since it is always normalized it ends up 0.1 anyway
 
@@ -561,7 +575,7 @@ int main() {
 					Y = int(intersection.y);
 					Z = int(intersection.z);
 
-					chunk[X][Y] = 1;
+					// chunk[X][Y] = 1;
 
 					keys[GLFW_KEY_ENTER] = 0;
 				}

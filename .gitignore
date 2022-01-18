@@ -1,0 +1,7 @@
+*.bin
+debug/
+objs/
+files_hash.txt
+*.asm
+*.cap
+results.json
