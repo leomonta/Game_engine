@@ -1,0 +1,32 @@
+{
+	"projectDir": ".",
+	"exeName": "Game.bin",
+	"compilerExe": "g++",
+	"Directories": {
+		"includeDir": [
+			"include",
+			"ext"
+		],
+		"sourceDir": [
+			"src"
+		],
+		"libraryDir": [
+			"ext/glew/lib",
+			"ext/glfw/lib"
+		],
+		"objectsDir": "objs",
+		"exeDir": "bin"
+	},
+	"libraries": [
+		"GLEW",
+		"glfw3",
+		"pthread",
+		"dl",
+		"GL",
+		"X11"
+	],
+	"Arguments": {
+		"Compiler": "-g3 -std=c++2a -Wno-missing-field-initializers -Wconversion -Wshadow -Wextra -Wpedantic -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak",
+		"Linker": "-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak"
+	}
+}
